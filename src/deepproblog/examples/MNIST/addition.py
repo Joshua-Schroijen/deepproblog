@@ -18,6 +18,10 @@ from deepproblog.network import Network
 from deepproblog.train import train_model
 from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
+import torchvision
+import torch.utils.data
+from pathlib import Path
+
 i = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
 parameters = {
@@ -46,6 +50,13 @@ if pretrain is not None and pretrain > 0:
     )
 net = Network(network, "mnist_net", batching=True)
 net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
+
+transform_for_calibration = torchvision.transforms.Compose(
+  [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
+)
+train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
+net.calibrate(torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True))
+print("NETWORK CALIBRATED NOW!")
 
 model = Model("models/addition.pl", [net])
 if configuration["method"] == "exact":
