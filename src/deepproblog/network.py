@@ -5,7 +5,7 @@ from typing import Any, Dict, IO, Iterator, Optional, Union, List
 
 import torch
 
-from network_calibrator import ModelWithTemperature
+from .network_calibrator import ModelWithTemperature
 
 def get_tensor_function(network: Network):
     def tensor_function(*args):
