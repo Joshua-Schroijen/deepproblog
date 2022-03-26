@@ -22,7 +22,7 @@ import torchvision
 import torch.utils.data
 from pathlib import Path
 
-def main(i=0, calibrate=False):
+def main(i=1, calibrate=False):
   parameters = {
       "method": ["gm", "exact"],
       "N": [1, 2, 3],
@@ -53,8 +53,10 @@ def main(i=0, calibrate=False):
   transform_for_calibration = torchvision.transforms.Compose(
     [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
   )
-  train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
-  net.calibrate(torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True))
+  
+  if calibrate == True:
+    train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
+    net.calibrate(torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True))
 
   model = Model("models/addition.pl", [net])
   if configuration["method"] == "exact":
@@ -79,9 +81,5 @@ def main(i=0, calibrate=False):
       "Accuracy {}".format(get_confusion_matrix(model, test_set, verbose=1).accuracy())
   )
   train.logger.write_to_file("log/" + name)
-  return get_confusion_matrix(model, test_set, verbose=1).accuracy()
 
-if __name__ == '__main__':
-  result_1 = main(1, False)
-  breakpoint()
-  result_2 = main(1, True)
+  return [train, get_confusion_matrix(model, test_set, verbose=1)]

@@ -86,65 +86,66 @@ def test_heuristic(net):
     acc = correct / n
     return acc
 
+def main(i=1, calibrate=False):
+  predicate_val = MNIST("train").subset(100)
+  network = MNIST_Net()
+  net = Network(network, "mnist_net", batching=True)
+  net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
+  heuristic_net = Separate_Baseline()
+  heuristic_net = Network(
+      heuristic_net,
+      "heuristic",
+      optimizer=torch.optim.Adam(heuristic_net.parameters(), lr=1e-3),
+  )
+  model = Model("models/any_sum.pl", [net, heuristic_net])
+  neural = NeuralHeuristic(
+      {"addition": lambda *x: heuristic_function(heuristic_net.network_module, *x)}, model
+  )
 
-predicate_val = MNIST("train").subset(100)
-network = MNIST_Net()
-net = Network(network, "mnist_net", batching=True)
-net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
-heuristic_net = Separate_Baseline()
-heuristic_net = Network(
-    heuristic_net,
-    "heuristic",
-    optimizer=torch.optim.Adam(heuristic_net.parameters(), lr=1e-3),
-)
-model = Model("models/any_sum.pl", [net, heuristic_net])
-neural = NeuralHeuristic(
-    {"addition": lambda *x: heuristic_function(heuristic_net.network_module, *x)}, model
-)
+  configurations = {
+      "bag_size": [16, 32],
+      "heuristic": [neural],
+      "pretrain": [500],
+      "exploration": [True, False],
+      "run": range(5),
+  }
+  configuration = get_configuration(configurations, i)
+  name = "anysum_" + config_to_string(configuration) + "_" + format_time_precise()
+  print(name)
 
-i = int(sys.argv[1]) if len(sys.argv) > 1 else 0
-configurations = {
-    "bag_size": [16, 32],
-    "heuristic": [neural],
-    "pretrain": [500],
-    "exploration": [True, False],
-    "run": range(5),
-}
-configuration = get_configuration(configurations, i)
-name = "anysum_" + config_to_string(configuration) + "_" + format_time_precise()
-print(name)
+  if configuration["pretrain"] > 0:
+      heuristic_net.network_module.load_state_dict(
+          torch.load(
+              "models/pretrained/addition_{}.pth".format(configuration["pretrain"])
+          )
+      )
 
-if configuration["pretrain"] > 0:
-    heuristic_net.network_module.load_state_dict(
-        torch.load(
-            "models/pretrained/addition_{}.pth".format(configuration["pretrain"])
-        )
-    )
+  model.add_tensor_source("train", MNIST_train)
+  model.add_tensor_source("test", MNIST_test)
+  engine = ApproximateEngine(
+      model, 1, configuration["heuristic"], exploration=configuration["exploration"]
+  )
+  model.set_engine(engine)
 
-model.add_tensor_source("train", MNIST_train)
-model.add_tensor_source("test", MNIST_test)
-engine = ApproximateEngine(
-    model, 1, configuration["heuristic"], exploration=configuration["exploration"]
-)
-model.set_engine(engine)
+  dataset = AnySum(addition(1, "train"), configuration["bag_size"])
 
-dataset = AnySum(addition(1, "train"), configuration["bag_size"])
+  loader = DataLoader(dataset, 2, True)
 
-loader = DataLoader(dataset, 2, True)
+  train = train_model(
+      model,
+      loader,
+      2,
+      log_iter=100,
+      test_iter=500,
+      test=lambda x: [
+          ("Predicate", get_confusion_matrix(x, predicate_val, verbose=0).accuracy()),
+          ("Heuristic", test_heuristic(heuristic_net.network_module)),
+      ],
+      profile=0,
+  )
 
-train = train_model(
-    model,
-    loader,
-    2,
-    log_iter=100,
-    test_iter=500,
-    test=lambda x: [
-        ("Predicate", get_confusion_matrix(x, predicate_val, verbose=0).accuracy()),
-        ("Heuristic", test_heuristic(heuristic_net.network_module)),
-    ],
-    profile=0,
-)
+  model.save_state("snapshot/" + name + ".pth")
+  train.logger.comment(dumps(model.get_hyperparameters()))
+  train.logger.write_to_file("log/" + name)
 
-model.save_state("snapshot/" + name + ".pth")
-train.logger.comment(dumps(model.get_hyperparameters()))
-train.logger.write_to_file("log/" + name)
+  return [train, get_confusion_matrix(model, mnist_addition_test, verbose=1)]

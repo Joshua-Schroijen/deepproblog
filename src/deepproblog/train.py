@@ -21,6 +21,7 @@ class TrainObject(object):
         self.accumulated_loss = 0
         self.i = 1
         self.start = 0
+        self.loss_history = []
         self.prev_iter_time = 0
         self.epoch = 0
         self.previous_handler = None
@@ -126,6 +127,8 @@ class TrainObject(object):
                     loss = self.get_loss_with_negatives(batch, loss_function)
                 else:
                     loss = self.get_loss(batch, loss_function)
+                if self.i % log_iter == 0:
+                    self.loss_history.append(loss)
                 self.accumulated_loss += loss
 
                 self.model.optimizer.step()

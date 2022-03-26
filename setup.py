@@ -28,13 +28,13 @@ setup(
     include_package_data=True,
     install_requires=[
         "problog",
-        "pyswip",
         "torch",
         "torchvision",
         "pysdd",
+        "pyswip",
     ],
     extras_require={
-        "examples": ["networkx", "Pillow", "scipy", "scikit-learn"],
+        "examples": ["fire", "matplotlib", "networkx", "Pillow", "scipy", "scikit-learn"],
         "tests": ["pytest"],
     },
 )
