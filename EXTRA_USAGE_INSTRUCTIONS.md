@@ -2,7 +2,7 @@ To develop in this codebase, install it in your Python installation as a local p
 `pip3 install -e .` (in the directory containing this very file)  
 
 If on Ubuntu, now make sure you have all GCC/G++ tooling to build PySDD and PySwip:  
-`sudo apt install gcc`  
+`sudo apt install gcc libpython3-dev`  
   
 Also make sure to have SWI-Prolog installed  
 `sudo apt install swi-prolog`  
