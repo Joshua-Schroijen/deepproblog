@@ -5,7 +5,6 @@ from typing import Any, Dict, IO, Iterator, Optional, Union, List
 
 import torch
 
-from .network_calibrator import ModelWithTemperature
 
 def get_tensor_function(network: Network):
     def tensor_function(*args):
@@ -25,7 +24,6 @@ class Network(object):
         batching: bool = False,
     ):
         """
-
         :param network_module: The neural network module.
         :param name: The name of the network as used in the neural predicate nn(name, ...)
         :param optimizer: The optimizer that updates the neural network parameters.
@@ -35,7 +33,6 @@ class Network(object):
         Otherwise, they are evaluated one by one.
         """
         self.network_module = network_module
-        self.uncalibrated_network_module = network_module
         self.name = name
         # self.function = function
         # if function is None:
@@ -52,7 +49,6 @@ class Network(object):
         self.eval_mode = False
         self.batching = batching
         self.det = False
-        self.calibrated = False
 
     def zero_grad(self):
         """
@@ -151,9 +147,6 @@ class Network(object):
         """
         Set the network to eval mode.
         """
-        if self.calibrated == True:
-            self.network_module = self.calibrated_network_module
-       
         self.network_module.eval()
         self.eval_mode = True
 
@@ -161,19 +154,8 @@ class Network(object):
         """
         Set the network to train mode.
         """
-        if self.calibrated == True:
-            self.network_module = self.uncalibrated_network_module
-
         self.network_module.train()
         self.eval_mode = False
-
-    def calibrate(self, valid_loader):
-        self.calibrated_network_module = ModelWithTemperature(self.uncalibrated_network_module).set_temperature(valid_loader)
-        
-        if self.eval_mode == True:
-            self.network_module = self.calibrated_network_module
-
-        self.calibrated = True
 
     def get_hyperparameters(self):
         parameters = {

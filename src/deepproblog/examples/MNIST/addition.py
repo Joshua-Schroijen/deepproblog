@@ -15,6 +15,7 @@ from deepproblog.examples.MNIST.data import (
 from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.network import Network
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
 from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
@@ -47,16 +48,18 @@ def main(i=1, calibrate=False):
       network.load_state_dict(
           torch.load("models/pretrained/all_{}.pth".format(configuration["pretrain"]))
       )
-  net = Network(network, "mnist_net", batching=True)
+  networks_evolution_collectors = {}
+  if calibrate == True:
+      train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
+      net = TemperatureScalingNetwork(network, "mnist_net", torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True), batching=True)
+      networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+  else:
+      net = Network(network, "mnist_net", batching=True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
 
   transform_for_calibration = torchvision.transforms.Compose(
     [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
   )
-  
-  if calibrate == True:
-    train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
-    net.calibrate(torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True))
 
   model = Model("models/addition.pl", [net])
   if configuration["method"] == "exact":
@@ -74,7 +77,7 @@ def main(i=1, calibrate=False):
   model.add_tensor_source("test", MNIST_test)
 
   loader = DataLoader(train_set, 2, False)
-  train = train_model(model, loader, 1, log_iter=100, profile=0)
+  train = train_model(model, loader, 1, networks_evolution_collectors, log_iter=100, profile=0)
   model.save_state("snapshot/" + name + ".pth")
   train.logger.comment(dumps(model.get_hyperparameters()))
   train.logger.comment(

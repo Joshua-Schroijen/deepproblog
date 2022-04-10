@@ -1,6 +1,6 @@
 import signal
 import time
-from typing import List, Callable, Union
+from typing import Dict, List, Callable, Union
 
 from deepproblog.dataset import DataLoader
 from deepproblog.model import Model
@@ -9,14 +9,16 @@ from deepproblog.utils.logger import Logger
 from deepproblog.utils.stop_condition import EpochStop
 from deepproblog.utils.stop_condition import StopCondition
 
+from .networks_evolution_collector import NetworksEvolutionCollector
 
 class TrainObject(object):
     """
     An object that performs the training of the model and keeps track of the state of the training.
     """
 
-    def __init__(self, model: Model):
+    def __init__(self, model: Model, networks_evolution_collectors: Dict[str, NetworksEvolutionCollector] = []):
         self.model = model
+        self.networks_evolution_collectors = networks_evolution_collectors
         self.logger = Logger()
         self.accumulated_loss = 0
         self.i = 1
@@ -97,6 +99,9 @@ class TrainObject(object):
         self.previous_handler = signal.getsignal(signal.SIGINT)
         loss_function = getattr(self.model.solver.semiring, loss_function_name)
 
+        for networks_evolution_collector in self.networks_evolution_collectors.values():
+            networks_evolution_collector.collect_before_training(self.model.networks)
+
         self.accumulated_loss = 0
         self.timing = [0, 0, 0]
         self.epoch = 0
@@ -113,6 +118,9 @@ class TrainObject(object):
         print("Training ", stop_criterion)
 
         while not (stop_criterion.is_stop(self) or self.interrupt):
+            for networks_evolution_collector in self.networks_evolution_collectors.values():
+                networks_evolution_collector.collect_before_epoch(self.model.networks)
+
             epoch_start = time.time()
             self.model.optimizer.step_epoch()
             if verbose and epoch_size > log_iter:
@@ -121,6 +129,8 @@ class TrainObject(object):
                 if self.interrupt:
                     break
                 self.i += 1
+                for networks_evolution_collector in self.networks_evolution_collectors.values():
+                    networks_evolution_collector.collect_before_iteration(self.model.networks)
                 self.model.train()
                 self.model.optimizer.zero_grad()
                 if with_negatives:
@@ -129,10 +139,15 @@ class TrainObject(object):
                     loss = self.get_loss(batch, loss_function)
                 if self.i % log_iter == 0:
                     self.loss_history.append(loss)
+
                 self.accumulated_loss += loss
 
                 self.model.optimizer.step()
+
+                for networks_evolution_collector in self.networks_evolution_collectors.values():
+                    networks_evolution_collector.collect_after_iteration(self.model.networks)
                 self.log(verbose=verbose, log_iter=log_iter, **kwargs)
+
                 for j, hook in self.hooks:
                     if self.i % j == 0:
                         hook(self)
@@ -142,10 +157,16 @@ class TrainObject(object):
             if verbose and epoch_size > log_iter:
                 print("Epoch time: ", time.time() - epoch_start)
             self.epoch += 1
+            for networks_evolution_collector in self.networks_evolution_collectors.values():
+                networks_evolution_collector.collect_after_epoch(self.model.networks)
+
         if "snapshot_name" in kwargs:
             filename = "{}_final.mdl".format(kwargs["snapshot_name"])
             print("Writing snapshot to " + filename)
             self.model.save_state(filename)
+
+        for networks_evolution_collector in self.networks_evolution_collectors.values():
+            networks_evolution_collector.collect_after_training(self.model.networks)
 
         signal.signal(signal.SIGINT, self.previous_handler)
         return self.logger
@@ -197,8 +218,9 @@ def train_model(
     model: Model,
     loader: DataLoader,
     stop_condition: Union[int, StopCondition],
+    networks_evolution_collectors: Dict[str, NetworksEvolutionCollector],
     **kwargs
 ) -> TrainObject:
-    train_object = TrainObject(model)
+    train_object = TrainObject(model, networks_evolution_collectors)
     train_object.train(loader, stop_condition, **kwargs)
     return train_object

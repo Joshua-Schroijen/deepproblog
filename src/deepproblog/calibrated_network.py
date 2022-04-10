@@ -20,11 +20,94 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from abc import ABC, abstractmethod
+from typing import Collection, Optional
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
+from torch.utils.data import DataLoader
 
-class ModelWithTemperature(nn.Module):
+from .network import Network
+from .networks_evolution_collector import NetworksEvolutionCollector
+
+class CalibratedNetwork(Network, ABC):
+    def __init__(
+        self,
+        network_module: torch.nn.Module,
+        name: str,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scheduler=None,
+        k: Optional[int] = None,
+        batching: bool = False,
+        calibrate_after_train: bool = False
+    ):
+        super().__init__(self, network_module, name, optimizer, scheduler, k, batching)
+        self.uncalibrated_network_module = network_module
+        self.calibrated_network_module = network_module
+        self.calibrated = False
+        self.calibrate_after_train = calibrate_after_train
+
+    def eval(self):
+        if self.calibrated == True:
+            self.network_module = self.calibrated_network_module
+
+        super().eval()
+
+    def train(self):
+        if self.calibrated == True:
+            self.network_module = self.uncalibrated_network_module
+
+        if self.calibrate_after_train == True:
+            self.calibrate()
+
+        super().train()
+
+    @abstractmethod
+    def calibrate(self):
+        if self.eval_mode == True:
+            self.network_module = self.calibrated_network_module
+
+        self.calibrated = True
+    
+    @property
+    @abstractmethod
+    def before_calibration_ece(self):
+        pass
+
+    @property
+    @abstractmethod
+    def after_calibration_ece(self):
+        pass
+      
+class TemperatureScalingNetwork(CalibratedNetwork):
+    def __init__(
+        self,
+        network_module: torch.nn.Module,
+        name: str,
+        valid_loader: DataLoader,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scheduler=None,
+        k: Optional[int] = None,
+        batching: bool = False,
+        calibrate_after_train: bool = False,
+    ):
+        super().__init__(self, network_module, name, optimizer, scheduler, k, batching, calibrate_after_train)
+        self.valid_loader = valid_loader
+
+    def calibrate(self):
+        self.calibrated_network_module = _NetworkWithTemperature(self.uncalibrated_network_module).set_temperature(self.valid_loader)
+        
+        super().calibrate()
+
+    @property
+    def before_calibration_ece(self):
+        return self.calibrated_network_module.before_temperature_ece
+
+    @property
+    def after_calibration_ece(self):
+        return self.calibrated_network_module.after_temperature_ece
+
+class _NetworkWithTemperature(nn.Module):
     """
     A thin decorator, which wraps a model with temperature scaling
     model (nn.Module):
@@ -84,6 +167,7 @@ class ModelWithTemperature(nn.Module):
         # Calculate NLL and ECE before temperature scaling
         before_temperature_nll = nll_criterion(logits, labels).item()
         before_temperature_ece = ece_criterion(logits, labels).item()
+        self.before_temperature_ece = before_temperature_ece
         print('Before temperature - NLL: %.3f, ECE: %.3f' % (before_temperature_nll, before_temperature_ece))
 
         # Next: optimize the temperature w.r.t. NLL
@@ -99,11 +183,19 @@ class ModelWithTemperature(nn.Module):
         # Calculate NLL and ECE after temperature scaling
         after_temperature_nll = nll_criterion(self.temperature_scale(logits), labels).item()
         after_temperature_ece = ece_criterion(self.temperature_scale(logits), labels).item()
+        self.after_temperature_ece = after_temperature_ece
         print('Optimal temperature: %.3f' % self.temperature.item())
         print('After temperature - NLL: %.3f, ECE: %.3f' % (after_temperature_nll, after_temperature_ece))
 
         return self
 
+    @property
+    def before_temperature_ece(self):
+        return self.before_temperature_ece
+
+    @property
+    def after_temperature_ece(self):
+        return self.after_temperature_ece
 
 class _ECELoss(nn.Module):
     """
@@ -144,3 +236,37 @@ class _ECELoss(nn.Module):
                 ece += torch.abs(avg_confidence_in_bin - accuracy_in_bin) * prop_in_bin
 
         return ece
+
+class NetworkECECollector(NetworksEvolutionCollector):
+    def __init__(self, epoch_collect_iter: int = 1, iteration_collect_iter: int = 100):
+        self.epoch_collect_iter = epoch_iter
+        self.iteration_collect_iter = iteration_iter
+
+        self.before_calibration_ece_history = {}
+        self.after_calibration_ece_history = {}
+
+        self._no_iterations = 0
+        self._no_epochs = 0
+
+    def collect_before_training(networks: Collection[Network]):
+        pass
+
+    def collect_before_epoch(networks: Collection[Network]):
+        pass
+
+    def collect_before_iteration(networks: Collection[Network]):
+        pass
+
+    def collect_after_iteration(networks: Collection[Network]):
+        self._no_iterations += 1
+        if self._no_iterations % iteration_collect_iter == 0:
+            for name in networks:
+                if isinstance(networks[name], CalibratedNetwork):
+                    self.before_calibration_ece_history[name] = self.before_calibration_ece_history.get(name, []).append(networks[name].before_calibration_ece)
+                    self.after_calibration_ece_history[name] = self.after_calibration_ece_history.get(name, []).append(networks[name].after_calibration_ece)
+
+    def collect_after_epoch(networks: Collection[Network]):
+        self._no_epochs += 1
+
+    def collect_after_training(networks: Collection[Network]):
+        pass
