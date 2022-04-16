@@ -23,7 +23,7 @@ import torchvision
 import torch.utils.data
 from pathlib import Path
 
-def main(i=1, calibrate=False):
+def main(i=1, calibrate=False, logging=False):
   parameters = {
       "method": ["gm", "exact"],
       "N": [1, 2, 3],

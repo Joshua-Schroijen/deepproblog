@@ -31,21 +31,93 @@ from .network import Network
 from .networks_evolution_collector import NetworksEvolutionCollector
 
 class CalibratedNetwork(Network, ABC):
+    class Options:
+        @property
+        def network_module(self):
+            return self._network_module
+
+        @property
+        def name(self):
+            return self._name
+
+        @property
+        def optimizer(self):
+            return self._optimizer
+
+        @property
+        def scheduler(self):
+            return self._scheduler
+
+        @property
+        def k(self):
+            return self._k
+
+        @property
+        def batching(self):
+            return self._batching
+
+        @property:
+        def calibrate_after_each_train_iteration(self):
+            return self._calibrate_after_each_train_iteration
+
+        @network_module.setter
+        def network_module(self, new):
+            self._network_module = new
+
+        @name.setter
+        def name(self, new):
+            self._name = new
+
+        @optimizer.setter
+        def optimizer(self, new):
+            self._optimizer = new
+
+        @scheduler.setter
+        def scheduler(self, new):
+            self._scheduler = new
+
+        @k.setter
+        def k(self, new):
+            self._k = new
+
+        @batching.setter
+        def batching(self, new):
+            self._batching = new
+
+        @calibrate_after_each_train_iteration.setter
+        def calibrate_after_each_train_iteration(self, new):
+            self._calibrate_after_each_train_iteration = new
+
+    @classmethod
+    def fromOptions(
+        cls,
+        options: Options
+    ):
+        return cls(
+            options.network_module,
+            options.name,
+            optimizer = options.optimizer,
+            scheduler = options.scheduler,
+            k = options.k,
+            batching = options.batching,
+            calibrate_after_each_train_iteration = options.calibrate_after_each_train_iteration
+        )
+
     def __init__(
         self,
         network_module: torch.nn.Module,
         name: str,
         optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler=None,
+        scheduler = None,
         k: Optional[int] = None,
         batching: bool = False,
-        calibrate_after_train: bool = False
+        calibrate_after_each_train_iteration: bool = False
     ):
         super().__init__(self, network_module, name, optimizer, scheduler, k, batching)
         self.uncalibrated_network_module = network_module
         self.calibrated_network_module = network_module
         self.calibrated = False
-        self.calibrate_after_train = calibrate_after_train
+        self.calibrate_after_each_train_iteration = calibrate_after_each_train_iteration
 
     def eval(self):
         if self.calibrated == True:
@@ -57,7 +129,7 @@ class CalibratedNetwork(Network, ABC):
         if self.calibrated == True:
             self.network_module = self.uncalibrated_network_module
 
-        if self.calibrate_after_train == True:
+        if self.calibrate_after_each_train_iteration == True:
             self.calibrate()
 
         super().train()
@@ -80,6 +152,31 @@ class CalibratedNetwork(Network, ABC):
         pass
       
 class TemperatureScalingNetwork(CalibratedNetwork):
+    class Options(CalibratedNetwork.Options):
+        @property
+        def valid_loader(self):
+            return self._valid_loader
+
+        @valid_loader.setter
+        def valid_loader(self, new):
+            self._valid_loader = new
+
+    @classmethod
+    def fromOptions(
+        cls,
+        options: Options
+    ):
+        return cls(
+            options.network_module,
+            options.name,
+            options.valid_loader,
+            optimizer = options.optimizer,
+            scheduler = options.scheduler,
+            k = options.k,
+            batching = options.batching,
+            calibrate_after_each_train_iteration = options.calibrate_after_each_train_iteration
+        )
+
     def __init__(
         self,
         network_module: torch.nn.Module,
@@ -89,9 +186,9 @@ class TemperatureScalingNetwork(CalibratedNetwork):
         scheduler=None,
         k: Optional[int] = None,
         batching: bool = False,
-        calibrate_after_train: bool = False,
+        calibrate_after_each_train_iteration: bool = False,
     ):
-        super().__init__(self, network_module, name, optimizer, scheduler, k, batching, calibrate_after_train)
+        super().__init__(self, network_module, name, optimizer, scheduler, k, batching, calibrate_after_each_train_iteration)
         self.valid_loader = valid_loader
 
     def calibrate(self):
