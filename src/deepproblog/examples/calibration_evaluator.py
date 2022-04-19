@@ -1,7 +1,7 @@
 import json
 import logging
+import logging.config
 import os
-from ssl import SSL_ERROR_SYSCALL
 
 import fire
 import numpy as np
@@ -43,8 +43,9 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
 def main(logfile="calibration_evaluation.txt"):
   if not os.path.isdir(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
-  logging.basicConfig(filename=logfile, level=logging.INFO, format=LOG_FORMAT, filemode='w')
-  logger = logging.getLogger()
+  #logging.basicConfig(filename=logfile, level=logging.INFO, format=LOG_FORMAT, filemode='w')
+  logging.config.fileConfig('calibration_evaluator_logging.ini')
+  logger = logging.getLogger(__name__)
 
   initial_working_directory = os.getcwd()
 
