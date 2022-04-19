@@ -56,7 +56,7 @@ class CalibratedNetwork(Network, ABC):
         def batching(self):
             return self._batching
 
-        @property:
+        @property
         def calibrate_after_each_train_iteration(self):
             return self._calibrate_after_each_train_iteration
 
@@ -113,11 +113,13 @@ class CalibratedNetwork(Network, ABC):
         batching: bool = False,
         calibrate_after_each_train_iteration: bool = False
     ):
-        super().__init__(self, network_module, name, optimizer, scheduler, k, batching)
+        super().__init__(network_module, name, optimizer, scheduler, k, batching)
         self.uncalibrated_network_module = network_module
         self.calibrated_network_module = network_module
         self.calibrated = False
         self.calibrate_after_each_train_iteration = calibrate_after_each_train_iteration
+
+        self._calibrate_called = False
 
     def eval(self):
         if self.calibrated == True:
@@ -136,11 +138,51 @@ class CalibratedNetwork(Network, ABC):
 
     @abstractmethod
     def calibrate(self):
+        self._calibrate_called = True
+
         if self.eval_mode == True:
             self.network_module = self.calibrated_network_module
 
         self.calibrated = True
-    
+
+    def get_expected_calibration_error(self, valid_loader, n_bins = 15):
+        with torch.no_grad():
+            logits_list = []
+            labels_list = []
+            for input, label in valid_loader:
+                if torch.cuda.is_available() == True:
+                    input = input.cuda()
+
+                logits = self.network_module(input)
+                logits_list.append(logits)
+                labels_list.append(label)
+
+            if torch.cuda.is_available() == True:
+                logits = torch.cat(logits_list).cuda()
+                labels = torch.cat(labels_list).cuda()
+            else:
+                logits = torch.cat(logits_list)
+                labels = torch.cat(labels_list)
+
+            bin_boundaries = torch.linspace(0, 1, n_bins + 1)
+            bin_lowers = bin_boundaries[:-1]
+            bin_uppers = bin_boundaries[1:]
+
+            softmaxes = F.softmax(logits, dim = 1)
+            confidences, predictions = torch.max(softmaxes, 1)
+            accuracies = predictions.eq(labels)
+
+            ece = torch.zeros(1, device = logits.device)
+            for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
+                in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
+                prop_in_bin = in_bin.float().mean()
+                if prop_in_bin.item() > 0:
+                    accuracy_in_bin = accuracies[in_bin].float().mean()
+                    avg_confidence_in_bin = confidences[in_bin].mean()
+                    ece += torch.abs(avg_confidence_in_bin - accuracy_in_bin) * prop_in_bin
+
+            return ece.item()
+
     @property
     @abstractmethod
     def before_calibration_ece(self):
@@ -183,12 +225,12 @@ class TemperatureScalingNetwork(CalibratedNetwork):
         name: str,
         valid_loader: DataLoader,
         optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler=None,
+        scheduler = None,
         k: Optional[int] = None,
         batching: bool = False,
-        calibrate_after_each_train_iteration: bool = False,
+        calibrate_after_each_train_iteration: bool = False
     ):
-        super().__init__(self, network_module, name, optimizer, scheduler, k, batching, calibrate_after_each_train_iteration)
+        super().__init__(network_module, name, optimizer, scheduler, k, batching, calibrate_after_each_train_iteration)
         self.valid_loader = valid_loader
 
     def calibrate(self):
@@ -198,11 +240,17 @@ class TemperatureScalingNetwork(CalibratedNetwork):
 
     @property
     def before_calibration_ece(self):
-        return self.calibrated_network_module.before_temperature_ece
+        if self._calibrate_called == True:
+           return self.calibrated_network_module.before_temperature_ece
+        else:
+           return None
 
     @property
     def after_calibration_ece(self):
-        return self.calibrated_network_module.after_temperature_ece
+        if self._calibrate_called == True:
+            return self.calibrated_network_module.after_temperature_ece
+        else:
+            return None
 
 class _NetworkWithTemperature(nn.Module):
     """
@@ -308,7 +356,7 @@ class _ECELoss(nn.Module):
     "Obtaining Well Calibrated Probabilities Using Bayesian Binning." AAAI.
     2015.
     """
-    def __init__(self, n_bins=15):
+    def __init__(self, n_bins = 15):
         """
         n_bins (int): number of confidence interval bins
         """
@@ -318,11 +366,11 @@ class _ECELoss(nn.Module):
         self.bin_uppers = bin_boundaries[1:]
 
     def forward(self, logits, labels):
-        softmaxes = F.softmax(logits, dim=1)
+        softmaxes = F.softmax(logits, dim = 1)
         confidences, predictions = torch.max(softmaxes, 1)
         accuracies = predictions.eq(labels)
 
-        ece = torch.zeros(1, device=logits.device)
+        ece = torch.zeros(1, device = logits.device)
         for bin_lower, bin_upper in zip(self.bin_lowers, self.bin_uppers):
             # Calculated |confidence - accuracy| in each bin
             in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
@@ -336,8 +384,8 @@ class _ECELoss(nn.Module):
 
 class NetworkECECollector(NetworksEvolutionCollector):
     def __init__(self, epoch_collect_iter: int = 1, iteration_collect_iter: int = 100):
-        self.epoch_collect_iter = epoch_iter
-        self.iteration_collect_iter = iteration_iter
+        self.epoch_collect_iter = epoch_collect_iter
+        self.iteration_collect_iter = iteration_collect_iter
 
         self.before_calibration_ece_history = {}
         self.after_calibration_ece_history = {}
@@ -345,25 +393,27 @@ class NetworkECECollector(NetworksEvolutionCollector):
         self._no_iterations = 0
         self._no_epochs = 0
 
-    def collect_before_training(networks: Collection[Network]):
+    def collect_before_training(self, networks: Collection[Network]):
         pass
 
-    def collect_before_epoch(networks: Collection[Network]):
+    def collect_before_epoch(self, networks: Collection[Network]):
         pass
 
-    def collect_before_iteration(networks: Collection[Network]):
+    def collect_before_iteration(self, networks: Collection[Network]):
         pass
 
-    def collect_after_iteration(networks: Collection[Network]):
+    def collect_after_iteration(self, networks: Collection[Network]):
         self._no_iterations += 1
-        if self._no_iterations % iteration_collect_iter == 0:
+        if self._no_iterations % self.iteration_collect_iter == 0:
             for name in networks:
                 if isinstance(networks[name], CalibratedNetwork):
-                    self.before_calibration_ece_history[name] = self.before_calibration_ece_history.get(name, []).append(networks[name].before_calibration_ece)
-                    self.after_calibration_ece_history[name] = self.after_calibration_ece_history.get(name, []).append(networks[name].after_calibration_ece)
+                    self.before_calibration_ece_history[name] = self.before_calibration_ece_history.get(name, [])
+                    self.before_calibration_ece_history[name].append(networks[name].before_calibration_ece)
+                    self.after_calibration_ece_history[name] = self.after_calibration_ece_history.get(name, [])
+                    self.after_calibration_ece_history[name].append(networks[name].after_calibration_ece)
 
-    def collect_after_epoch(networks: Collection[Network]):
+    def collect_after_epoch(self, networks: Collection[Network]):
         self._no_epochs += 1
 
-    def collect_after_training(networks: Collection[Network]):
+    def collect_after_training(self, networks: Collection[Network]):
         pass

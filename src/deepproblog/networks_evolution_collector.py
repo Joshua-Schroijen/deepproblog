@@ -5,25 +5,25 @@ from .network import Network
 
 class NetworksEvolutionCollector(ABC):
   @abstractmethod
-  def collect_before_training(networks: Collection[Network]):
+  def collect_before_training(self, networks: Collection[Network]):
     pass
 
   @abstractmethod
-  def collect_before_epoch(networks: Collection[Network]):
+  def collect_before_epoch(self, networks: Collection[Network]):
     pass
 
   @abstractmethod
-  def collect_before_iteration(networks: Collection[Network]):
+  def collect_before_iteration(self, networks: Collection[Network]):
     pass
 
   @abstractmethod
-  def collect_after_iteration(networks: Collection[Network]):
+  def collect_after_iteration(self, networks: Collection[Network]):
     pass
     
   @abstractmethod
-  def collect_after_epoch(networks: Collection[Network]):
+  def collect_after_epoch(self, networks: Collection[Network]):
     pass
 
   @abstractmethod
-  def collect_after_training(networks: Collection[Network]):
+  def collect_after_training(self, networks: Collection[Network]):
     pass

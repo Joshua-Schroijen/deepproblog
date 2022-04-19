@@ -23,7 +23,12 @@ import torchvision
 import torch.utils.data
 from pathlib import Path
 
-def main(i=1, calibrate=False, logging=False):
+def main(
+  i = 1,
+  calibrate = False,
+  calibrate_after_each_train_iteration = False,
+  logging = False
+):
   parameters = {
       "method": ["gm", "exact"],
       "N": [1, 2, 3],
@@ -50,16 +55,16 @@ def main(i=1, calibrate=False, logging=False):
       )
   networks_evolution_collectors = {}
   if calibrate == True:
-      train_set_for_calibration = torchvision.datasets.MNIST(root=str(Path(__file__).parent.joinpath('data')), train=True, download=True, transform=transform_for_calibration)
-      net = TemperatureScalingNetwork(network, "mnist_net", torch.utils.data.DataLoader(train_set_for_calibration, batch_size=64, shuffle=True), batching=True)
+      transform_for_calibration = torchvision.transforms.Compose(
+        [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
+      )
+      train_set_for_calibration = torchvision.datasets.MNIST(root = str(Path(__file__).parent.joinpath('data')), train = True, download = True, transform = transform_for_calibration)
+      train_loader_for_calibration = torch.utils.data.DataLoader(train_set_for_calibration, batch_size = 64, shuffle = True)
+      net = TemperatureScalingNetwork(network, "mnist_net", train_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
       networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
       net = Network(network, "mnist_net", batching=True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
-
-  transform_for_calibration = torchvision.transforms.Compose(
-    [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
-  )
 
   model = Model("models/addition.pl", [net])
   if configuration["method"] == "exact":
@@ -79,10 +84,12 @@ def main(i=1, calibrate=False, logging=False):
   loader = DataLoader(train_set, 2, False)
   train = train_model(model, loader, 1, networks_evolution_collectors, log_iter=100, profile=0)
   model.save_state("snapshot/" + name + ".pth")
-  train.logger.comment(dumps(model.get_hyperparameters()))
-  train.logger.comment(
-      "Accuracy {}".format(get_confusion_matrix(model, test_set, verbose=1).accuracy())
-  )
-  train.logger.write_to_file("log/" + name)
 
-  return [train, get_confusion_matrix(model, test_set, verbose=1)]
+  if logging == True:
+    train.logger.comment(dumps(model.get_hyperparameters()))
+    train.logger.comment(
+      "Accuracy {}".format(get_confusion_matrix(model, test_set, verbose = 0).accuracy())
+    )
+    train.logger.write_to_file("log/" + name)
+
+  return [train, get_confusion_matrix(model, test_set, verbose = 0)]
