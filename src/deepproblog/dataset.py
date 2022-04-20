@@ -166,8 +166,10 @@ class Subset(Dataset):
         return self.dataset.to_file_repr(i + self.i)
 
     def __getitem__(self, item):
-        # if item >= len(self):
-        #     raise IndexError()
+        if type(item) is tuple:
+            item = item[0]
+        if type(item) is Constant:
+            item = item.value
         return self.dataset[item + self.i]
 
     def __len__(self):

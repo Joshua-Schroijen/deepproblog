@@ -16,12 +16,12 @@ transform = transforms.Compose(
 class Coins(ImageDataset):
     def __init__(
         self,
-        subset,
+        set_part,
     ):
-        super().__init__("{}/image_data/{}/".format(path, subset), transform=transform)
+        super().__init__("{}/image_data/{}/".format(path, set_part), transform=transform)
         self.data = []
-        self.subset = subset
-        with open("{}/label_data/{}.csv".format(path, subset)) as f:
+        self.set_part = set_part
+        with open("{}/label_data/{}.csv".format(path, set_part)) as f:
             for line in f:
                 c1, c2 = [l.strip() for l in line.split(",")]
                 outcome = "loss"
@@ -31,7 +31,7 @@ class Coins(ImageDataset):
 
     def to_query(self, i):
         c1, c2, outcome = self.data[i]
-        sub = {Term("a"): Term("tensor", Term(self.subset, Constant(i)))}
+        sub = {Term("a"): Term("tensor", Term(self.set_part, Constant(i)))}
         # if j == 0:
         #     return Term('coin', Constant(j + 1), Term('a'), Term(c1)), sub
         # elif j == 1:

@@ -10,9 +10,18 @@ import matplotlib.pyplot as plt
 import deepproblog.examples.MNIST.addition as addition
 import deepproblog.examples.MNIST.addition_mil as addition_mil
 import deepproblog.examples.MNIST.addition_noisy as addition_noisy
+import deepproblog.examples.Coins.coins as coins
 
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 RESULTS_DIR = os.path.join(os.getcwd(), "calibration_evaluator_results")
+
+MNIST_ADDITION_SEED = 66815121350953911695398616902400003414994440380511384177123061993195380927844
+MNIST_ADDITION_NOISY_SEED =65383380116126662821362947724785949135007927266136665876324451069998367473092
+FORTH_SEED = 112195398336644232901763685921564964554228813564928553493693669635703169635702
+HWF_SEED = 30575021600727355504011411996420506533046860355500394129121043613226662678680
+POKER_SEED = 15384679245914431582552102544026922064770126905211487330762948489981255464981
+COINS_SEED = 55584395892288086672466369677165805286392349207122007596909015435442832056023
+CLUTRR_SEED = 78171602626066457765912268658639150623375646781597908325888418343003898255803
 
 def log_heading(logger, txt, length = 50):
   txt_len_plus_1 = len(txt) + 1
@@ -40,18 +49,8 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
   with open(os.path.join(RESULTS_DIR, filename), "w") as f:
     json.dump(data_of_interest, f, indent = 6)
 
-def main(logfile="calibration_evaluation.txt"):
-  if not os.path.isdir(RESULTS_DIR):
-    os.mkdir(RESULTS_DIR)
-  #logging.basicConfig(filename=logfile, level=logging.INFO, format=LOG_FORMAT, filemode='w')
-  logging.config.fileConfig('calibration_evaluator_logging.ini')
-  logger = logging.getLogger(__name__)
-
-  initial_working_directory = os.getcwd()
-
-  os.chdir("./MNIST")
-
-  log_heading(logger, "Evaluating addition")
+def MNIST_addition(logger):
+  log_heading(logger, "Evaluating MNIST addition")
 
   log_subheading(logger, "Without calibration")
   [train, confusion_matrix] = addition.main(calibrate = False, calibrate_after_each_train_iteration = False)
@@ -69,6 +68,46 @@ def main(logfile="calibration_evaluation.txt"):
   [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_experiment_3.json", train, confusion_matrix)
   log_empty_line(logger)
+
+def coins(logger):
+  log_heading(logger, "Evaluating Coins")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = coins.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_19.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_20.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_21.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+def main(logfile="calibration_evaluation.txt"):
+  if not os.path.isdir(RESULTS_DIR):
+    os.mkdir(RESULTS_DIR)
+  logging.config.fileConfig('calibration_evaluator_logging.ini')
+  logger = logging.getLogger(__name__)
+
+  initial_working_directory = os.getcwd()
+
+  os.chdir("./MNIST")
+
+  MNIST_addition(logger)
+
+  log_heading(logger, "Evaluating MNIST noisy addition")
+  log_heading(logger, "Evaluating Forth")
+  log_heading(logger, "Evaluating HWF")
+  log_heading(logger, "Evaluating CLUTRR")
+  log_heading(logger, "Evaluating Poker")
+
+  coins(logger)
 
   os.chdir(initial_working_directory)
 
