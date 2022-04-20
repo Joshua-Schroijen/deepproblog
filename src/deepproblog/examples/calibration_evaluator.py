@@ -49,7 +49,7 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
   with open(os.path.join(RESULTS_DIR, filename), "w") as f:
     json.dump(data_of_interest, f, indent = 6)
 
-def MNIST_addition(logger):
+def evaluate_MNIST_addition(logger):
   log_heading(logger, "Evaluating MNIST addition")
 
   log_subheading(logger, "Without calibration")
@@ -69,7 +69,7 @@ def MNIST_addition(logger):
   dump_data_of_interest("calibration_evaluation_experiment_3.json", train, confusion_matrix)
   log_empty_line(logger)
 
-def coins(logger):
+def evaluate_coins(logger):
   log_heading(logger, "Evaluating Coins")
 
   log_subheading(logger, "Without calibration")
@@ -99,15 +99,15 @@ def main(logfile="calibration_evaluation.txt"):
 
   os.chdir("./MNIST")
 
-  MNIST_addition(logger)
+  #evaluate_MNIST_addition(logger)
 
-  log_heading(logger, "Evaluating MNIST noisy addition")
-  log_heading(logger, "Evaluating Forth")
-  log_heading(logger, "Evaluating HWF")
-  log_heading(logger, "Evaluating CLUTRR")
-  log_heading(logger, "Evaluating Poker")
+  #log_heading(logger, "Evaluating MNIST noisy addition")
+  #log_heading(logger, "Evaluating Forth")
+  #log_heading(logger, "Evaluating HWF")
+  #log_heading(logger, "Evaluating CLUTRR")
+  #log_heading(logger, "Evaluating Poker")
 
-  coins(logger)
+  evaluate_coins(logger)
 
   os.chdir(initial_working_directory)
 
