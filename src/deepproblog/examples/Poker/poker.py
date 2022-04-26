@@ -4,43 +4,74 @@ from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Poker import PokerSeparate
 from deepproblog.model import Model
 from deepproblog.network import Network
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.optimizer import SGD
 from deepproblog.train import train_model
 from deepproblog.utils.standard_networks import smallnet
 import torch
 
-batch_size = 50
-datasets = {
-    "unfair": PokerSeparate(
-        "unfair", probs=[0.2, 0.4, 0.15, 0.25], extra_supervision=True
-    ),
-    "fair_test": PokerSeparate("fair_test"),
-}
+def split_train_set(train_set):
+  train_set_length = len(train_set)
+  rest_train_set = train_set.subset(round(0.8 * train_set_length))
+  validation_set = train_set.subset(round(0.8 * train_set_length), train_set_length)
+  return [rest_train_set, validation_set]
 
-dataset = "unfair"
-net = Network(
-    smallnet(pretrained=True, num_classes=4, size=(100, 150)), "net1", batching=True
-)
-net.optimizer = torch.optim.Adam(net.parameters(), lr=1e-4)
-loader = DataLoader(datasets[dataset], batch_size)
+def main(
+  calibrate = False,
+  calibrate_after_each_train_iteration = False
+):
+  datasets = {
+      "unfair": PokerSeparate(
+          "unfair", probs = [0.2, 0.4, 0.15, 0.25], extra_supervision = True
+      ),
+      "fair_test": PokerSeparate("fair_test"),
+  }
+  dataset = "unfair"
 
-model = Model("model.pl", [net])
-model.set_engine(ExactEngine(model), cache=True)
-model.optimizer = SGD(model, 5e-2)
-model.add_tensor_source(dataset, datasets[dataset])
-model.add_tensor_source("fair_test", datasets["fair_test"])
+  batch_size = 50
 
-train_obj = train_model(
-    model,
-    loader,
-    10,
-    loss_function_name="mse",
-    log_iter=len(datasets["unfair"]) // batch_size,
-    test_iter=5 * len(datasets["unfair"]) // batch_size,
-    test=lambda x: [
-        ("Accuracy", get_confusion_matrix(model, datasets["fair_test"]).accuracy())
-    ],
-    infoloss=0.5,
-)  # ,
+  if calibrate == True:
+    rest_train_set, validation_set = split_train_set(datasets[dataset])
+    train_loader = DataLoader(rest_train_set, batch_size)
+    valid_loader = DataLoader(validation_set, batch_size)
+  else:
+    train_loader = DataLoader(datasets[dataset], batch_size)
 
-cm = get_confusion_matrix(model, datasets["fair_test"])
+  networks_evolution_collectors = {}
+  if calibrate == True:
+    net = TemperatureScalingNetwork(
+      smallnet(pretrained = True, num_classes = 4, size = (100, 150)),
+      "net1",
+      valid_loader,
+      batching = True
+    )
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+  else:
+    net = Network(
+      smallnet(pretrained = True, num_classes = 4, size = (100, 150)),
+      "net1",
+      batching = True
+    )
+  net.optimizer = torch.optim.Adam(net.parameters(), lr = 1e-4)
+
+  model = Model("model.pl", [net])
+  model.set_engine(ExactEngine(model), cache = True)
+  model.optimizer = SGD(model, 5e-2)
+  model.add_tensor_source(dataset, datasets[dataset])
+  model.add_tensor_source("fair_test", datasets["fair_test"])
+
+  train_obj = train_model(
+      model,
+      train_loader,
+      10,
+      networks_evolution_collectors,
+      loss_function_name = "mse",
+      log_iter = len(datasets["unfair"]) // batch_size,
+      test_iter = 5 * len(datasets["unfair"]) // batch_size,
+      test = lambda x: [
+          ("Accuracy", get_confusion_matrix(model, datasets["fair_test"]).accuracy())
+      ],
+      infoloss = 0.5,
+  ) 
+  cm = get_confusion_matrix(model, datasets["fair_test"], verbose = 0)
+  return [train_obj, cm]

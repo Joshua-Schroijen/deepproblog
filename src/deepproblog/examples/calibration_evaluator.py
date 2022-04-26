@@ -11,6 +11,7 @@ import deepproblog.examples.MNIST.addition as addition
 import deepproblog.examples.MNIST.addition_mil as addition_mil
 import deepproblog.examples.MNIST.addition_noisy as addition_noisy
 import deepproblog.examples.Coins.coins as coins
+import deepproblog.examples.Poker.poker as poker
 
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 RESULTS_DIR = os.path.join(os.getcwd(), "calibration_evaluator_results")
@@ -97,6 +98,30 @@ def evaluate_coins(logger):
 
   os.chdir("..")
 
+def evaluate_poker(logger):
+  os.chdir("./Poker")
+
+  log_heading(logger, "Evaluating Poker")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = poker.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_16.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_17.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_experiment_18.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
 def main(logfile="calibration_evaluation.txt"):
   if not os.path.isdir(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
@@ -105,7 +130,7 @@ def main(logfile="calibration_evaluation.txt"):
 
   initial_working_directory = os.getcwd()
 
-  #evaluate_MNIST_addition(logger)
+  evaluate_MNIST_addition(logger)
 
   #log_heading(logger, "Evaluating MNIST noisy addition")
   #log_heading(logger, "Evaluating Forth")
@@ -114,6 +139,8 @@ def main(logfile="calibration_evaluation.txt"):
   #log_heading(logger, "Evaluating Poker")
 
   evaluate_coins(logger)
+
+  evaluate_poker(logger)
 
   os.chdir(initial_working_directory)
 

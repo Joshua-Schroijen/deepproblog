@@ -71,18 +71,18 @@ def main(
       if configuration["exploration"] or configuration["N"] > 2:
           print("Not supported?")
           exit()
-      model.set_engine(ExactEngine(model), cache=True)
+      model.set_engine(ExactEngine(model), cache = True)
   elif configuration["method"] == "gm":
       model.set_engine(
           ApproximateEngine(
-              model, 1, geometric_mean, exploration=configuration["exploration"]
+              model, 1, geometric_mean, exploration = configuration["exploration"]
           )
       )
   model.add_tensor_source("train", MNIST_train)
   model.add_tensor_source("test", MNIST_test)
 
   loader = DataLoader(train_set, 2, False)
-  train = train_model(model, loader, 1, networks_evolution_collectors, log_iter=100, profile=0)
+  train = train_model(model, loader, 1, networks_evolution_collectors, log_iter = 100, profile = 0)
   model.save_state("snapshot/" + name + ".pth")
 
   if logging == True:
