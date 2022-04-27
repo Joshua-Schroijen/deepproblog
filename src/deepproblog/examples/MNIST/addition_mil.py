@@ -86,7 +86,7 @@ def test_heuristic(net):
     acc = correct / n
     return acc
 
-def main(i=1, calibrate=False):
+def main(i = 1, calibrate = False):
   predicate_val = MNIST("train").subset(100)
   network = MNIST_Net()
   net = Network(network, "mnist_net", batching=True)

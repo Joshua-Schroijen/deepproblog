@@ -1,3 +1,4 @@
+import fire
 import torch
 
 from deepproblog.dataset import DataLoader, QueryDataset
@@ -54,3 +55,6 @@ def main(
   )
   cm = get_confusion_matrix(test_model, val, verbose = 0)
   return [train_obj, cm]
+
+if __name__ == "__main__":
+  fire.Fire(main())

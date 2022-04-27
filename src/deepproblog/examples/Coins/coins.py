@@ -62,3 +62,6 @@ def main(
   )
 
   return [train_obj, get_confusion_matrix(model, test_dataset, verbose = 0)]
+
+if __name__ == "__main__":
+  main()

@@ -75,3 +75,6 @@ def main(
   ) 
   cm = get_confusion_matrix(model, datasets["fair_test"], verbose = 0)
   return [train_obj, cm]
+
+if __name__ == "__main__":
+  main()

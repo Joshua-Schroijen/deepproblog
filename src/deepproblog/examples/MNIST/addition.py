@@ -1,5 +1,6 @@
-import sys
+import fire
 from json import dumps
+import sys
 
 import torch
 
@@ -93,3 +94,6 @@ def main(
     train.logger.write_to_file("log/" + name)
 
   return [train, get_confusion_matrix(model, test_set, verbose = 0)]
+
+if __name__ == "__main__":
+  fire.Fire(main())

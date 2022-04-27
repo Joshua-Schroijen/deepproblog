@@ -16,7 +16,7 @@ class TrainObject(object):
     An object that performs the training of the model and keeps track of the state of the training.
     """
 
-    def __init__(self, model: Model, networks_evolution_collectors: Dict[str, NetworksEvolutionCollector] = []):
+    def __init__(self, model: Model, networks_evolution_collectors: Dict[str, NetworksEvolutionCollector] = {}):
         self.model = model
         self.networks_evolution_collectors = networks_evolution_collectors
         self.logger = Logger()
@@ -218,7 +218,7 @@ def train_model(
     model: Model,
     loader: DataLoader,
     stop_condition: Union[int, StopCondition],
-    networks_evolution_collectors: Dict[str, NetworksEvolutionCollector],
+    networks_evolution_collectors: Dict[str, NetworksEvolutionCollector] = {},
     **kwargs
 ) -> TrainObject:
     train_object = TrainObject(model, networks_evolution_collectors)

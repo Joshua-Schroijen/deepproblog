@@ -62,3 +62,6 @@ def main(calibrate=False):
   noisy_test_set = MutatingDataset(test_set, NoiseMutatorDecorator(0.2, noise))
 
   return [train, get_confusion_matrix(model, noisy_test_set, verbose=1)]
+
+if __name__ == "__main__":
+  main()
