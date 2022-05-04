@@ -1,3 +1,6 @@
+import fire
+from torch.utils.data import DataLoader as TorchDataLoader
+
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
@@ -33,7 +36,7 @@ def main(
   if calibrate == True:
     rest_train_set, validation_set = split_train_set(datasets[dataset])
     train_loader = DataLoader(rest_train_set, batch_size)
-    valid_loader = DataLoader(validation_set, batch_size)
+    calibration_valid_loader = TorchDataLoader(validation_set, batch_size)
   else:
     train_loader = DataLoader(datasets[dataset], batch_size)
 
@@ -42,7 +45,7 @@ def main(
     net = TemperatureScalingNetwork(
       smallnet(pretrained = True, num_classes = 4, size = (100, 150)),
       "net1",
-      valid_loader,
+      calibration_valid_loader,
       batching = True
     )
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
@@ -77,4 +80,4 @@ def main(
   return [train_obj, cm]
 
 if __name__ == "__main__":
-  main()
+  fire.Fire(main)

@@ -27,7 +27,7 @@ def main(
   if calibrate == True:
     rest_train_set, validation_set = split_train_set(train_dataset)
     train_loader = DataLoader(rest_train_set, batch_size)
-    calibration_loader = TorchDataLoader(validation_set, batch_size)
+    calibration_valid_loader = TorchDataLoader(validation_set, batch_size)
   else:
     train_loader = DataLoader(train_dataset, batch_size)
   lr = 1e-4
@@ -36,8 +36,8 @@ def main(
   coin_network1 = smallnet(num_classes = 2, pretrained = True)
   coin_network2 = smallnet(num_classes = 2, pretrained = True)
   if calibrate == True:
-    coin_net1 = TemperatureScalingNetwork(coin_network1, "net1", calibration_loader, batching = True)
-    coin_net2 = TemperatureScalingNetwork(coin_network2, "net2", calibration_loader, batching = True)
+    coin_net1 = TemperatureScalingNetwork(coin_network1, "net1", calibration_valid_loader, batching = True)
+    coin_net2 = TemperatureScalingNetwork(coin_network2, "net2", calibration_valid_loader, batching = True)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     coin_net1 = Network(coin_network1, "net1", batching = True)
