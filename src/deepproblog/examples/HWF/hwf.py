@@ -3,15 +3,17 @@ from json import dumps
 from sys import argv
 
 from torch.optim import Adam
+from torch.utils.data import DataLoader as TorchDataLoader
 
 from deepproblog.engines import ApproximateEngine, ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
-from deepproblog.dataset import DataLoader
+from deepproblog.dataset import DataLoader 
 from deepproblog.train import train_model
 from deepproblog.examples.HWF.data import HWFDataset, hwf_images
+from deepproblog.examples.HWF.data.for_calibration import RawHWFNumbersValidationDataset, RawHWFOperatorsValidationDataset
 from deepproblog.examples.HWF.network import SymbolEncoder, SymbolClassifier
 from deepproblog.heuristics import *
 from deepproblog.utils import format_time_precise, get_configuration, config_to_string
@@ -58,9 +60,10 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    valid_loader = DataLoader(val_dataset, 32, shuffle = True)
-    net1 = TemperatureScalingNetwork(network1, "net1", valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True)
-    net2 = TemperatureScalingNetwork(network2, "net2", valid_loader, Adam(network2.parameters(), lr = 3e-3), batching = True)
+    net1_valid_loader = TorchDataLoader(RawHWFNumbersValidationDataset(), 32, shuffle = True)
+    net2_valid_loader = TorchDataLoader(RawHWFOperatorsValidationDataset(), 32, shuffle = True)
+    net1 = TemperatureScalingNetwork(network1, "net1", net1_valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True)
+    net2 = TemperatureScalingNetwork(network2, "net2", net2_valid_loader, Adam(network2.parameters(), lr = 3e-3), batching = True)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     net1 = Network(network1, "net1", Adam(network1.parameters(), lr = 3e-3), batching = True)

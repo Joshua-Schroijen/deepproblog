@@ -113,7 +113,7 @@ class CalibratedNetwork(Network, ABC):
         batching: bool = False,
         calibrate_after_each_train_iteration: bool = False
     ):
-        super().__init__(network_module, name, optimizer, scheduler, k, batching)
+        super(Network, self).__init__(network_module, name, optimizer, scheduler, k, batching)
         self.uncalibrated_network_module = network_module
         self.calibrated_network_module = network_module
         self.calibrated = False
