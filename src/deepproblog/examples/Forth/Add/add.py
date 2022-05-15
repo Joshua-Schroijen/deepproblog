@@ -1,10 +1,12 @@
 import fire
 import torch
+from torch.utils.data import DataLoader as TorchDataLoader
 
 from deepproblog.dataset import DataLoader, QueryDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Forth import EncodeModule
+from deepproblog.examples.Forth.Add.data.for_calibration import RawAddNeural1ValidationDataset, RawAddNeural2ValidationDataset
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
@@ -27,10 +29,10 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    network1 = TemperatureScalingNetwork(net1, "neural1", DataLoader(val, 50))
-    network2 = TemperatureScalingNetwork(net2, "neural2", DataLoader(val, 50))
-    test_network1 = TemperatureScalingNetwork(net1, "neural1", DataLoader(val, 50), k = 1)
-    test_network2 = TemperatureScalingNetwork(net2, "neural2", DataLoader(val, 50), k = 1)
+    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(RawAddNeural1ValidationDataset(), 50))
+    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(RawAddNeural2ValidationDataset(), 50))
+    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(RawAddNeural1ValidationDataset(), 50), k = 1)
+    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(RawAddNeural2ValidationDataset(), 50), k = 1)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     network1 = Network(net1, "neural1")
@@ -57,4 +59,4 @@ def main(
   return [train_obj, cm]
 
 if __name__ == "__main__":
-  fire.Fire(main())
+  fire.Fire(main)

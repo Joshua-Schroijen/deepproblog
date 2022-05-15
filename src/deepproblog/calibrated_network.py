@@ -27,7 +27,7 @@ from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
-from .network import Network
+from .network import Network, ClassificationNetworkModule
 from .networks_evolution_collector import NetworksEvolutionCollector
 
 class CalibratedNetwork(Network, ABC):
@@ -105,7 +105,7 @@ class CalibratedNetwork(Network, ABC):
 
     def __init__(
         self,
-        network_module: torch.nn.Module,
+        network_module: ClassificationNetworkModule,
         name: str,
         optimizer: Optional[torch.optim.Optimizer] = None,
         scheduler = None,
@@ -113,7 +113,7 @@ class CalibratedNetwork(Network, ABC):
         batching: bool = False,
         calibrate_after_each_train_iteration: bool = False
     ):
-        super(Network, self).__init__(network_module, name, optimizer, scheduler, k, batching)
+        super(CalibratedNetwork, self).__init__(network_module, name, optimizer, scheduler, k, batching)
         self.uncalibrated_network_module = network_module
         self.calibrated_network_module = network_module
         self.calibrated = False
@@ -150,10 +150,7 @@ class CalibratedNetwork(Network, ABC):
             logits_list = []
             labels_list = []
             for input, label in valid_loader:
-                if torch.cuda.is_available() == True:
-                    input = input.cuda()
-
-                logits = self.network_module(input)
+                logits = self.network_module.get_output_logits(input)
                 logits_list.append(logits)
                 labels_list.append(label)
 
@@ -221,7 +218,7 @@ class TemperatureScalingNetwork(CalibratedNetwork):
 
     def __init__(
         self,
-        network_module: torch.nn.Module,
+        network_module: ClassificationNetworkModule,
         name: str,
         valid_loader: DataLoader,
         optimizer: Optional[torch.optim.Optimizer] = None,
@@ -260,13 +257,13 @@ class _NetworkWithTemperature(nn.Module):
         NB: Output of the neural network should be the classification logits,
             NOT the softmax (or log softmax)!
     """
-    def __init__(self, model):
-        super(ModelWithTemperature, self).__init__()
+    def __init__(self, model: ClassificationNetworkModule):
+        super(_NetworkWithTemperature, self).__init__()
         self.model = model
         self.temperature = nn.Parameter(torch.ones(1) * 1.5)
 
     def forward(self, input):
-        logits = self.model(input)
+        logits = self.model.get_output_logits(input)
         return self.temperature_scale(logits)
 
     def temperature_scale(self, logits):
@@ -297,10 +294,7 @@ class _NetworkWithTemperature(nn.Module):
         labels_list = []
         with torch.no_grad():
             for input, label in valid_loader:
-                if torch.cuda.is_available() == True:
-                    input = input.cuda()
-
-                logits = self.model(input)
+                logits = self.model.get_output_logits(input)
                 logits_list.append(logits)
                 labels_list.append(label)
             if torch.cuda.is_available() == True:

@@ -3,8 +3,9 @@ import torch.nn as nn
 from typing import Dict, Union
 from problog.logic import Term
 
+from deepproblog.network import ClassificationNetworkModule
 
-class MLP(nn.Module):
+class MLP(ClassificationNetworkModule):
     def __init__(self, *sizes, activation=nn.ReLU, softmax=True, batch=True):
         super(MLP, self).__init__()
         layers = []
@@ -20,8 +21,13 @@ class MLP(nn.Module):
     def forward(self, x):
         if not self.batch:
             x = x.unsqueeze(0)
-        x = self.nn(x)
+        x = self.nn[:-1](x)
         return x
+
+    def get_output_logits(self, input):
+        if not self.batch:
+            input = input.unsqueeze(0)
+        return self.nn(input)
 
 
 import torch.nn as nn

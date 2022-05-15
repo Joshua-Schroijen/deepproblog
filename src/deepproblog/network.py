@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from os import PathLike
 from typing import Any, Dict, IO, Iterator, Optional, Union, List
 
@@ -12,6 +13,10 @@ def get_tensor_function(network: Network):
 
     return tensor_function
 
+class ClassificationNetworkModule(torch.nn.Module, ABC):
+  @abstractmethod
+  def get_output_logits(self, input):
+    pass
 
 class Network(object):
     def __init__(
