@@ -33,7 +33,7 @@ def main(
     ]
 
   model = Model("wap.pl", train_networks)
-  model.set_engine(ExactEngine(model), cache = True)
+  model.set_engine(ExactEngine(model), cache = False)
   test_model = Model("wap.pl", test_networks)
   test_model.set_engine(ExactEngine(test_model), cache = False)
 

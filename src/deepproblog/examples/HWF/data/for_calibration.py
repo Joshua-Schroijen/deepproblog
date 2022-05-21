@@ -8,7 +8,6 @@ import sqlite3
 
 from torchvision.io import read_image
 from torch.utils.data import Dataset
-from PIL import Image
 
 class RawHWFDatasetDatabase:
   class DatasetPart(Enum):
@@ -19,10 +18,9 @@ class RawHWFDatasetDatabase:
     self.dataset_part = dataset_part
 
   def initialize(self):
-    self.__class__.DatasetPart
     self.connection = sqlite3.connect('hwf_raw_dataset.sqlite')
     self.cursor = self.connection.cursor()
-    if self._is_hwf_samples_db_ready():
+    if not self._is_hwf_samples_db_ready():
       self.cursor.execute("CREATE TABLE hwf_raw_data_train ( path text, label text, class text)")
       self.cursor.execute("CREATE TABLE hwf_raw_data_validation ( path text, label text, class text)")
       self.cursor.execute("CREATE TABLE hwf_raw_data_class_lengths_train ( class text, length integer )")
@@ -98,13 +96,13 @@ class RawHWFDatasetDatabase:
 
   def _is_hwf_samples_db_ready(self):
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'hwf_raw_data_train';")
-    hwf_raw_data_train_table_exists = (self.cursor.fetchall() == [])
+    hwf_raw_data_train_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'hwf_raw_data_class_lengths_train';")
-    hwf_raw_data_set_lengths_train_table_exists = (self.cursor.fetchall() == [])
+    hwf_raw_data_set_lengths_train_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'hwf_raw_data_validation';")
-    hwf_raw_data_validation_table_exists = (self.cursor.fetchall() == [])
+    hwf_raw_data_validation_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'hwf_raw_data_class_lengths_validation';")
-    hwf_raw_data_set_lengths_validation_table_exists = (self.cursor.fetchall() == [])
+    hwf_raw_data_set_lengths_validation_table_exists = (self.cursor.fetchall() != [])
     return (hwf_raw_data_train_table_exists and \
             hwf_raw_data_set_lengths_train_table_exists and \
             hwf_raw_data_validation_table_exists and \

@@ -51,6 +51,7 @@ class RNN(nn.Module):
         x, _, indices = tokenize(sentence)
         n1, n2, n3 = indices
         seq_len = len(x)
+        breakpoint()
         x = torch.LongTensor(x).unsqueeze(0)
         x = self.embedding(x)
         x, _ = self.lstm(x)
@@ -59,6 +60,8 @@ class RNN(nn.Module):
         x2 = torch.cat([x[0, 1, ...], x[n1, 1, ...], x[n2, 1, ...], x[n3, 1, ...]])
         x = torch.cat([x1, x2])
         #        return x
+        ret = self.dropout(x)
+        breakpoint()
         return self.dropout(x)
 
 

@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 import ast
 from enum import Enum
 import math
-import os
 from pathlib import Path
 import random
 import sqlite3
@@ -10,7 +9,6 @@ import sqlite3
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-from PIL import Image
 
 class RawAddDatasetDatabase:
   class DatasetPart(Enum):
@@ -21,10 +19,9 @@ class RawAddDatasetDatabase:
     self.dataset_part = dataset_part
 
   def initialize(self):
-    self.__class__.DatasetPart
     self.connection = sqlite3.connect('raw_add_dataset.sqlite')
     self.cursor = self.connection.cursor()
-    if self._is_add_samples_db_ready():
+    if not self._is_add_samples_db_ready():
       self.cursor.execute("CREATE TABLE add_neural1_raw_data_train ( I1 integer, I2 integer, Carry integer, O integer)")
       self.cursor.execute("CREATE TABLE add_neural2_raw_data_train ( I1 integer, I2 integer, Carry integer, NewCarry integer)")
       self.cursor.execute("CREATE TABLE add_neural1_raw_data_validation ( I1 integer, I2 integer, Carry integer, O integer)")
@@ -111,17 +108,17 @@ class RawAddDatasetDatabase:
 
   def _is_add_samples_db_ready(self):
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural1_raw_data_train';")
-    add_neural1_raw_data_train_table_exists = (self.cursor.fetchall() == [])
+    add_neural1_raw_data_train_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural2_raw_data_train';")
-    add_neural2_raw_data_train_table_exists = (self.cursor.fetchall() == [])
+    add_neural2_raw_data_train_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural1_raw_data_validation';")
-    add_neural1_raw_data_validation_table_exists = (self.cursor.fetchall() == [])
+    add_neural1_raw_data_validation_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural2_raw_data_validation';")
-    add_neural2_raw_data_validation_table_exists = (self.cursor.fetchall() == [])
+    add_neural2_raw_data_validation_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_raw_data_lengths_train';")
-    add_raw_data_lengths_train_table_exists = (self.cursor.fetchall() == [])
+    add_raw_data_lengths_train_table_exists = (self.cursor.fetchall() != [])
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_raw_data_lengths_validation';")
-    add_raw_data_lengths_validation_table_exists = (self.cursor.fetchall() == [])
+    add_raw_data_lengths_validation_table_exists = (self.cursor.fetchall() != [])
     return (add_neural1_raw_data_train_table_exists and \
             add_neural2_raw_data_train_table_exists and \
             add_neural1_raw_data_validation_table_exists and \
@@ -177,7 +174,3 @@ class RawAddNeural2ValidationDataset(RawAddValidationDataset):
 
   def _encode_label(self, label):
     return F.one_hot(torch.tensor(label), num_classes = 2).type(torch.FloatTensor)
-
-if __name__ == "__main__":
-  neural1_validation_dataset = RawAddNeural1ValidationDataset()
-  print(len(neural1_validation_dataset))

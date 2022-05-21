@@ -1,0 +1,198 @@
+[33mcommit 4f5c3dba672ed777499dea6aa240a06339162fa9[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Sun May 15 13:40:40 2022 +0200
+
+    Add Forth/Add Torch DataSet object for calibration
+
+[33mcommit b30eecbdf1cbc771edb64ae7de3055b4910c6e94[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon May 9 22:16:57 2022 +0200
+
+    Add HWF Torch DataSet object for calibration
+
+[33mcommit f0d2f2274d865ddf597c84b5fbb045ce2e9c15ab[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed May 4 16:06:25 2022 +0200
+
+    Adjust Coins calibration data loader
+
+[33mcommit 0b5bf36a170bfddbeb7517f61a2926f2f8064c76[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed May 4 13:17:00 2022 +0200
+
+    Adjust Coins calibration data loader
+
+[33mcommit 8dfc6a2eeaa7b1af7279563d41891b8422a6a938[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed Apr 27 11:42:36 2022 +0200
+
+    Forth/Sort en Forth/WAP toevoegen aan calibration evaluator
+
+[33mcommit 7c631bc8db1c76299f7d691bf61878ab8be7c6a8[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Tue Apr 26 15:42:51 2022 +0200
+
+    Add calibration evaluation of Forth/Add and Poker examples
+
+[33mcommit 0f05fa8ff31e8858989932856a2840db768beb32[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed Apr 20 23:31:02 2022 +0200
+
+    Fix calibration evaluator directory switching
+
+[33mcommit 4e79e058651f2e15d467728e7bedb6f6bf783ae1[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed Apr 20 23:12:00 2022 +0200
+
+    Fix bad naming in calibration evaluator code causing error
+
+[33mcommit 5134f82499d759ea7599f86399e359783c69549e[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed Apr 20 22:43:48 2022 +0200
+
+    Add Coins example support to calibration evaluator
+
+[33mcommit e96e30ddcd2b979baaef9c45464b3f986e12b073[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Wed Apr 20 00:26:10 2022 +0200
+
+    Refine logging
+
+[33mcommit 66a60ab279d18b6d135df9692050082f0dbac3fa[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Tue Apr 19 17:26:11 2022 +0200
+
+    Refining calibration evaluator and improve ECE calculation and reporting support
+
+[33mcommit 9e119373891edaecd4f9f1ce6c4cb59526908f38[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Sun Apr 17 00:51:29 2022 +0200
+
+    Options support toevoegen aan CalibratedNeworks
+
+[33mcommit 1d0958cc2a9cfe2b4c4c92905efb4881563bf08a[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Fri Apr 15 22:25:24 2022 +0200
+
+    addition_mil refactoren
+
+[33mcommit b21b0b6203f5aa42d54bb3ecfbc7ccadbe836efc[m
+Merge: f038074 1256407
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Sun Apr 10 21:31:28 2022 +0200
+
+    Merge branch 'master' of https://github.com/Joshua-Schroijen/deepproblog
+
+[33mcommit f0380742ee3f86cd7d29c4674757dcb87745fb4a[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Sun Apr 10 21:30:23 2022 +0200
+
+    Refactoring
+
+[33mcommit 1256407fcae9a27b029af1120b1e6dea52775f0f[m
+Author: Joshua-Schroijen <44849369+Joshua-Schroijen@users.noreply.github.com>
+Date:   Mon Mar 28 01:40:22 2022 +0200
+
+    Update EXTRA_USAGE_INSTRUCTIONS.md
+
+[33mcommit c31fe8f4b2e1e3dc87aa4b53b6efaf7b063fea1c[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Sat Mar 26 14:15:01 2022 +0100
+
+    Wrap other addition examples in function and fix addition_noisy.py
+
+[33mcommit ab0638dabd4525662ae58b0981f4349ebe62cc54[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Fri Mar 18 22:31:07 2022 +0100
+
+    Wrap addition example in function for easy implementation of calibration switch
+
+[33mcommit d74104eb1733375a61d415026775d007c6c5c8b2[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon Mar 14 23:13:20 2022 +0100
+
+    Fix Markdown markup
+
+[33mcommit 71173279f8a92bff0c814be2184af83034bf1421[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon Mar 14 23:11:05 2022 +0100
+
+    Fix Markdown markup
+
+[33mcommit 78a9ecbb4469217d21e0f4c1877099a133aba716[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon Mar 14 23:02:04 2022 +0100
+
+    Add extra installation instructions
+
+[33mcommit c8a6a4fc5540cb3fb4e41ca696adcf9ecea7734a[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon Mar 14 22:56:17 2022 +0100
+
+    Fix little import error
+
+[33mcommit d794b3c10861be27974e42cd2b24ce98fc3fbd47[m
+Author: Joshua Schroijen <Joshua.Schroijen@gmail.com>
+Date:   Mon Mar 14 13:36:20 2022 +0100
+
+    Temperature scaling calibration toevoegen aan MNIST addition voorbeeld
+
+[33mcommit 6d38e783990551f4030780a1d69c7138fada2020[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Mon Aug 23 21:32:06 2021 +0200
+
+    Update README.md
+
+[33mcommit f03392f352625426a95e5f97db5c72dc594cf7db[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Fri Jul 23 11:44:57 2021 +0200
+
+    Fixed foreign functions for the approximate engine.
+
+[33mcommit c3e9ed01089e630486212ee2fd892f8bc1201b1d[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Tue Jul 6 11:47:54 2021 +0200
+
+    Bugfix update
+
+[33mcommit 519381536d6333ccb714a382d438046a4190b25c[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Tue Jul 6 11:26:37 2021 +0200
+
+    Included a fix for neural networks with tensorial outputs when caching.
+
+[33mcommit 2991691d87d57992fae4f54c75c021bc5a8a6337[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Mon Jun 28 17:32:21 2021 +0200
+
+    Update issue templates
+
+[33mcommit 03bf6bf91ecf1e45e63355406bee0e020b7b2ee6[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Mon Jun 28 17:29:17 2021 +0200
+
+    Update LICENSE
+
+[33mcommit 94a7b03daf5767c8904276195cb7051c732818cf[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Mon Jun 28 17:24:45 2021 +0200
+
+    Create LICENSE
+
+[33mcommit 8204ad1cdc0d12ee709739b2b1904f6360b3e5b0[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Mon Jun 28 15:52:33 2021 +0200
+
+    Include missing data for Forth examples.
+
+[33mcommit b5461f9deb122ebe11119e7ee2fcf8abd84cd79e[m
+Author: rmanhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Wed Jun 23 09:01:22 2021 +0200
+
+    Update README.md
+
+[33mcommit 0e0d27c990c8401b9f958208130ce195fb12e8ed[m
+Author: Robin Manhaeve <robin.manhaeve@cs.kuleuven.be>
+Date:   Wed Jun 23 08:57:38 2021 +0200
+
+    Initial commit
