@@ -60,7 +60,6 @@ class RNN(nn.Module):
         x = torch.cat([x1, x2])
         #        return x
         ret = self.dropout(x)
-        breakpoint()
         return self.dropout(x)
 
 
