@@ -1,0 +1,5 @@
+wap("At the fair there were 9 people in line for the bumper cars . If 6 of them got tired of waiting and left and 3 more got in line , how many people would be in line ?",9,6,3,6).
+wap("While shopping for music online , Janet bought 6 country albums and 2 pop albums . Each album came with a lyric sheet and had 9 songs . How many songs did Janet buy total ?",6,2,9,72).
+wap("A painter needed to paint 9 rooms in a building . Each room takes 8 hours to paint . If he already painted 5 rooms , how much longer will he take to paint the rest ?",9,8,5,32).
+wap("Haley was planting vegetables in her garden . She started with 56 seeds and planted 35 of them in the big garden and in each of her small gardens put 3 seeds each . How many small gardens did Haley have ?",56,35,3,7).
+wap("Katie had 85 files on her computer . She deleted 40 of them and put the rest into folders with 5 files in each one . How many folders did Katie end up with ?",85,40,5,9).
