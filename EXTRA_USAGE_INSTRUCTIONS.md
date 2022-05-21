@@ -9,4 +9,4 @@ Also make sure to have SWI-Prolog installed
 
 Uninstall PySwip and PySDD and reinstall them using these commands:  
 `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`  
-`pip3 install ggit+https://github.com/ML-KULeuven/pyswip@development#egg=pyswip`
+`pip3 install git+https://github.com/ML-KULeuven/pyswip@development#egg=pyswip`
