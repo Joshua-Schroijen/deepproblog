@@ -59,7 +59,6 @@ class RNN(nn.Module):
         x2 = torch.cat([x[0, 1, ...], x[n1, 1, ...], x[n2, 1, ...], x[n3, 1, ...]])
         x = torch.cat([x1, x2])
         #        return x
-        ret = self.dropout(x)
         return self.dropout(x)
 
 

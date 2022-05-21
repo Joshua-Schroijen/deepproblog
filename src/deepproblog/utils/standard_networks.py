@@ -9,6 +9,7 @@ class MLP(ClassificationNetworkModule):
     def __init__(self, *sizes, activation=nn.ReLU, softmax=True, batch=True):
         super(MLP, self).__init__()
         layers = []
+        self.softmax = softmax
         self.batch = batch
         for i in range(len(sizes) - 2):
             layers.append(nn.Linear(sizes[i], sizes[i + 1]))
@@ -21,14 +22,13 @@ class MLP(ClassificationNetworkModule):
     def forward(self, x):
         if not self.batch:
             x = x.unsqueeze(0)
-        x = self.nn[:-1](x)
+        x = self.nn(x)
         return x
 
     def get_output_logits(self, input):
         if not self.batch:
             input = input.unsqueeze(0)
-        return self.nn(input)
-
+        return self.nn[:-1](input) if self.softmax else self.nn(input)
 
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
