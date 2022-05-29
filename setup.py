@@ -34,7 +34,7 @@ setup(
         "pyswip",
     ],
     extras_require={
-        "examples": ["fire", "matplotlib", "networkx", "Pillow", "scipy", "scikit-learn"],
+        "examples": ["PyInquirer", "fire", "matplotlib", "networkx", "Pillow", "scipy", "scikit-learn"],
         "tests": ["pytest"],
     },
 )

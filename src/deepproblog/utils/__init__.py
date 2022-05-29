@@ -1,3 +1,4 @@
+import io
 import os
 import sys
 from configparser import ConfigParser
@@ -7,6 +8,8 @@ from pathlib import Path
 from statistics import mean, stdev
 from time import strftime
 from typing import Union, Any, Dict
+
+import torch
 
 import problog
 from problog.logic import Term
@@ -218,3 +221,15 @@ def config_to_string(configuration: Dict[str, Any]) -> str:
         "{}_{}".format(parameter, configuration[parameter])
         for parameter in configuration
     )
+
+def tensor_to_bytes(tensor):
+  buffer = io.BytesIO()
+  torch.save(tensor, buffer)
+  buffer.seek(0)
+  return buffer.read()
+
+def bytes_to_tensor(blob):
+  buffer = io.BytesIO()
+  buffer.write(blob)
+  buffer.seek(0)
+  return torch.load(buffer)

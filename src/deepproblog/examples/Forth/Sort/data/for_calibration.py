@@ -27,11 +27,11 @@ class RawSortDatasetDatabase:
       self.cursor.execute("CREATE TABLE sort_raw_data_train ( X integer, Y integer, swap boolean )")
       self.cursor.execute("CREATE TABLE sort_raw_data_validation ( X integer, Y integer, swap boolean )")
       with open(Path(__file__).parent / "swap_net.txt", "r") as swap_net:
-        swap_net = [ast.literal_eval(s.strip()) for s in swap_net.readlines()]
-      random.shuffle(swap_net)
-      swap_net_split_index = math.floor(0.8 * len(swap_net))
-      swap_net_train = swap_net[:swap_net_split_index]
-      swap_net_validation = swap_net[swap_net_split_index:]
+        swap_net_samples = [ast.literal_eval(s.strip()) for s in swap_net.readlines()]
+      random.shuffle(swap_net_samples)
+      swap_net_split_index = math.floor(0.8 * len(swap_net_samples))
+      swap_net_train = swap_net_samples[:swap_net_split_index]
+      swap_net_validation = swap_net_samples[swap_net_split_index:]
       with self.connection:
         for sample in swap_net_train:
           X, Y = sample

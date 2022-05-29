@@ -57,6 +57,14 @@ class CalibratedNetwork(Network, ABC):
             return self._batching
 
         @property
+        def auto_calibrate_after_train(self):
+            return self._auto_calibrate_after_train
+
+        @property
+        def auto_disable_calibration_after_eval(self):
+            return self._auto_disable_calibration_after_eval
+
+        @property
         def calibrate_after_each_train_iteration(self):
             return self._calibrate_after_each_train_iteration
 
@@ -84,6 +92,14 @@ class CalibratedNetwork(Network, ABC):
         def batching(self, new):
             self._batching = new
 
+        @auto_calibrate_after_train.setter
+        def auto_calibrate_after_train(self, new):
+            self._auto_calibrate_after_train = new
+
+        @auto_disable_calibration_after_eval.setter
+        def auto_disable_calibration_after_eval(self, new):
+            self._auto_disable_calibration_after_eval = new
+
         @calibrate_after_each_train_iteration.setter
         def calibrate_after_each_train_iteration(self, new):
             self._calibrate_after_each_train_iteration = new
@@ -100,6 +116,8 @@ class CalibratedNetwork(Network, ABC):
             scheduler = options.scheduler,
             k = options.k,
             batching = options.batching,
+            auto_calibrate_after_train = options.auto_calibrate_after_train,
+            auto_disable_calibration_after_eval = options.auto_disable_calibration_after_eval,
             calibrate_after_each_train_iteration = options.calibrate_after_each_train_iteration
         )
 
@@ -111,39 +129,49 @@ class CalibratedNetwork(Network, ABC):
         scheduler = None,
         k: Optional[int] = None,
         batching: bool = False,
+        auto_calibrate_after_train: bool = True,
+        auto_disable_calibration_after_eval: bool = True,
         calibrate_after_each_train_iteration: bool = False
     ):
         super(CalibratedNetwork, self).__init__(network_module, name, optimizer, scheduler, k, batching)
         self.uncalibrated_network_module = network_module
         self.calibrated_network_module = network_module
         self.calibrated = False
+        self.auto_calibrate_after_train = auto_calibrate_after_train
+        self.auto_disable_calibration_after_eval = auto_disable_calibration_after_eval
         self.calibrate_after_each_train_iteration = calibrate_after_each_train_iteration
 
         self._calibrate_called = False
 
     def eval(self):
-        if self.calibrated == True:
-            self.network_module = self.calibrated_network_module
+        if self.auto_calibrate_after_train == True:
+            self.calibrate()
 
         super().eval()
 
     def train(self):
-        if self.calibrated == True:
-            self.network_module = self.uncalibrated_network_module
-
+        # TODO: NOT THE RIGHT PLACE!
         if self.calibrate_after_each_train_iteration == True:
             self.calibrate()
+            self.disable_calibration()
+
+        if self.auto_disable_calibration_after_eval:
+            self.disable_calibration()
 
         super().train()
 
     @abstractmethod
     def calibrate(self):
         self._calibrate_called = True
-
-        if self.eval_mode == True:
-            self.network_module = self.calibrated_network_module
-
+        self.network_module = self.calibrated_network_module
         self.calibrated = True
+
+    def disable_calibration(self):
+        self.network_module = self.uncalibrated_network_module
+        self.calibrated = False
+
+    def re_enable_calibration(self):
+        self.network_module = self.calibrated_network_module
 
     def get_expected_calibration_error(self, valid_loader, n_bins = 15):
         with torch.no_grad():
@@ -213,6 +241,8 @@ class TemperatureScalingNetwork(CalibratedNetwork):
             scheduler = options.scheduler,
             k = options.k,
             batching = options.batching,
+            auto_calibrate_after_trian = options.auto_calibrate_after_train,
+            auto_disable_calibration_after_eval = options.auto_disable_calibration_after_eval,
             calibrate_after_each_train_iteration = options.calibrate_after_each_train_iteration
         )
 
@@ -225,11 +255,15 @@ class TemperatureScalingNetwork(CalibratedNetwork):
         scheduler = None,
         k: Optional[int] = None,
         batching: bool = False,
+        auto_calibrate_after_train: bool = True,
+        auto_disable_calibration_after_eval: bool = True,
         calibrate_after_each_train_iteration: bool = False
     ):
-        super().__init__(network_module, name, optimizer, scheduler, k, batching, calibrate_after_each_train_iteration)
+        super().__init__(network_module, name, optimizer, scheduler, k, batching, auto_calibrate_after_train, auto_disable_calibration_after_eval, calibrate_after_each_train_iteration)
         self.valid_loader = valid_loader
 
+    # WARNING: in principle, temperature scaling calibration is only meant to be used after
+    # base network training is complete, i.e. if eval_mode is True!
     def calibrate(self):
         self.calibrated_network_module = _NetworkWithTemperature(self.uncalibrated_network_module).set_temperature(self.valid_loader)
         
@@ -249,6 +283,7 @@ class TemperatureScalingNetwork(CalibratedNetwork):
         else:
             return None
 
+# TODO: has to be ClassificationNetworkModule
 class _NetworkWithTemperature(nn.Module):
     """
     A thin decorator, which wraps a model with temperature scaling

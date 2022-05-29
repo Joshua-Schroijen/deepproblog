@@ -13,9 +13,9 @@ def main(
   calibrate = False,
   calibrate_after_each_train_iteration = False
 ):
-  train_queries = QueryDataset("data/train.pl")
-  dev_queries = QueryDataset("data/dev.pl")
-  test_queries = QueryDataset("data/test.pl")
+  train_queries = QueryDataset("data/train_s.pl")
+  dev_queries = QueryDataset("data/dev_s.pl")
+  test_queries = QueryDataset("data/test_s.pl")
 
   networks = get_networks(0.005, 0.5)
 
@@ -48,6 +48,7 @@ def main(
     ],
     test_iter=30,
   )
+
   return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
