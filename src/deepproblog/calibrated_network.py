@@ -149,12 +149,14 @@ class CalibratedNetwork(Network, ABC):
 
         super().eval()
 
-    def train(self):
-        # TODO: NOT THE RIGHT PLACE!
+    def step(self):
         if self.calibrate_after_each_train_iteration == True:
             self.calibrate()
             self.disable_calibration()
 
+        super().step()
+
+    def train(self):
         if self.auto_disable_calibration_after_eval:
             self.disable_calibration()
 
@@ -283,8 +285,7 @@ class TemperatureScalingNetwork(CalibratedNetwork):
         else:
             return None
 
-# TODO: has to be ClassificationNetworkModule
-class _NetworkWithTemperature(nn.Module):
+class _NetworkWithTemperature(ClassificationNetworkModule):
     """
     A thin decorator, which wraps a model with temperature scaling
     model (nn.Module):
@@ -297,6 +298,9 @@ class _NetworkWithTemperature(nn.Module):
         self.model = model
         self.temperature = nn.Parameter(torch.ones(1) * 1.5)
 
+    def get_output_logits(self, input):
+        return self.model.get_output_logits(input)
+    
     def forward(self, input):
         logits = self.model.get_output_logits(input)
         return self.temperature_scale(logits)
