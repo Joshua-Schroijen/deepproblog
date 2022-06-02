@@ -31,10 +31,10 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50))
-    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50))
-    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), k = 1)
-    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), k = 1)
+    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     network1 = Network(net1, "neural1")
