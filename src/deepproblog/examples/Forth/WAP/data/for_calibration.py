@@ -104,20 +104,48 @@ class RawWAPDatasetDatabase:
     with self.connection:
       self.cursor.execute("UPDATE wap_op1_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
+  def update_embeddings_op1(self, rnn):
+    self.cursor.execute(f"SELECT WAP FROM wap_op1_raw_data;")
+    results = self.cursor.fetchall()
+    for result in results:
+      WAP, = result
+      self.update_embedding_op1(WAP, rnn)
+
   def update_embedding_op2(self, WAP, rnn):
     new_embedding = tensor_to_bytes(rnn.forward(WAP))
     with self.connection:
       self.cursor.execute("UPDATE wap_op2_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
+
+  def update_embeddings_op2(self, rnn):
+    self.cursor.execute(f"SELECT WAP FROM wap_op2_raw_data;")
+    results = self.cursor.fetchall()
+    for result in results:
+      WAP, = result
+      self.update_embedding_op2(WAP, rnn)
 
   def update_embedding_permute(self, WAP, rnn):
     new_embedding = tensor_to_bytes(rnn.forward(WAP))
     with self.connection:
       self.cursor.execute("UPDATE wap_permute_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
+  def update_embeddings_permute(self, rnn):
+    self.cursor.execute(f"SELECT WAP FROM wap_permute_raw_data;")
+    results = self.cursor.fetchall()
+    for result in results:
+      WAP, = result
+      self.update_embedding_permute(WAP, rnn)
+
   def update_embedding_swap(self, WAP, rnn):
     new_embedding = tensor_to_bytes(rnn.forward(WAP))
     with self.connection:
       self.cursor.execute("UPDATE wap_swap_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
+
+  def update_embeddings_swap(self, rnn):
+    self.cursor.execute(f"SELECT WAP FROM wap_swap_raw_data;")
+    results = self.cursor.fetchall()
+    for result in results:
+      WAP, = result
+      self.update_embedding_swap(WAP, rnn)
 
   def _is_WAP_samples_db_ready(self):
     self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'wap_op1_raw_data';")
@@ -193,6 +221,10 @@ class RawWAPValidationDataset(Dataset, ABC):
   def update_embedding(self, WAP, rnn):
     pass
 
+  @abstractmethod
+  def update_embeddings(self, rnn):
+    pass
+
 class RawWAPOpValidationDataset(RawWAPValidationDataset):
   mapping = {
     "+": 0,
@@ -221,6 +253,9 @@ class RawWAPOp1ValidationDataset(RawWAPOpValidationDataset):
   def update_embedding(self, WAP, rnn):
     self.dataset_db.update_embedding_op1(WAP, rnn)
 
+  def update_embeddings(self, rnn):
+    self.dataset_db.update_embeddings_op1(rnn)
+
 class RawWAPOp2ValidationDataset(RawWAPOpValidationDataset):
   def __init__(self):
     super().__init__()
@@ -235,6 +270,9 @@ class RawWAPOp2ValidationDataset(RawWAPOpValidationDataset):
   def update_embedding(self, WAP, rnn):
     self.dataset_db.update_embedding_op2(WAP, rnn)
 
+  def update_embeddings(self, rnn):
+    self.dataset_db.update_embeddings_op2(rnn)
+
 class RawWAPPermuteValidationDataset(RawWAPValidationDataset):
   def __init__(self):
     super().__init__()
@@ -248,6 +286,9 @@ class RawWAPPermuteValidationDataset(RawWAPValidationDataset):
 
   def update_embedding(self, WAP, rnn):
     self.dataset_db.update_embedding_permute(WAP, rnn)
+
+  def update_embeddings(self, rnn):
+    self.dataset_db.update_embeddings_permute(rnn)
 
   def _encode_permutation(self, permutation_number):
     return F.one_hot(torch.tensor(permutation_number), num_classes = 6).type(torch.FloatTensor)
@@ -265,6 +306,9 @@ class RawWAPSwapValidationDataset(RawWAPValidationDataset):
 
   def update_embedding(self, WAP, rnn):
     self.dataset_db.update_embedding_swap(WAP, rnn)
+
+  def update_embeddings(self, rnn):
+    self.dataset_db.update_embeddings_swap(rnn)
 
   def _encode_swap(self, swapped):
     return F.one_hot(torch.tensor(int(swapped)), num_classes = 2).type(torch.FloatTensor)

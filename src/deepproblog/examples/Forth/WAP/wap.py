@@ -1,8 +1,10 @@
 import fire
+from torch.utils.data import DataLoader as TorchDataLoader
 
 from deepproblog.dataset import DataLoader, QueryDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
+from deepproblog.examples.Forth.WAP.data.for_calibration import RawWAPOp1ValidationDataset, RawWAPOp2ValidationDataset, RawWAPPermuteValidationDataset, RawWAPSwapValidationDataset
 from deepproblog.examples.Forth.WAP.wap_network import get_networks
 from deepproblog.model import Model
 from deepproblog.network import Network
@@ -10,21 +12,24 @@ from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECE
 from deepproblog.train import train_model
 
 def main(
-  calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate = False
 ):
   train_queries = QueryDataset("data/train_s.pl")
   dev_queries = QueryDataset("data/dev_s.pl")
   test_queries = QueryDataset("data/test_s.pl")
+  raw_WAP_op1_validation_dataset = RawWAPOp1ValidationDataset()
+  raw_WAP_op2_validation_dataset = RawWAPOp2ValidationDataset()
+  raw_WAP_permute_validation_dataset = RawWAPPermuteValidationDataset()
+  raw_WAP_swap_validation_dataset = RawWAPSwapValidationDataset()
 
   networks = get_networks(0.005, 0.5)
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    train_networks = [TemperatureScalingNetwork(x[0], x[1], DataLoader(dev_queries, 10), x[2]) for x in networks]
+    train_networks = [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(RawWAPSwapValidationDataset(), 10), x[2]) for x in networks]
     test_networks = \
-      [TemperatureScalingNetwork(networks[0][0], networks[0][1], DataLoader(dev_queries, 10))] + \
-      [TemperatureScalingNetwork(x[0], x[1], DataLoader(dev_queries, 10), k = 1) for x in networks[1:]]
+      [TemperatureScalingNetwork(networks[0][0], networks[0][1], DataLoader(RawWAPSwapValidationDataset(), 10))] + \
+      [TemperatureScalingNetwork(x[0], x[1], DataLoader(RawWAPSwapValidationDataset(), 10), k = 1) for x in networks[1:]]
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     train_networks = [Network(x[0], x[1], x[2]) for x in networks]
@@ -49,7 +54,16 @@ def main(
     test_iter=30,
   )
 
-  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
+  rnn = networks[0][0]
+  raw_WAP_op1_validation_dataset.update_embeddings(rnn)
+  raw_WAP_op2_validation_dataset.update_embeddings(rnn)
+  raw_WAP_permute_validation_dataset.update_embeddings(rnn)
+  raw_WAP_swap_validation_dataset.update_embeddings(rnn)
+  for train_network in train_networks:
+    train_network.calibrate()
+
+  #return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
+  return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
   fire.Fire(main())
