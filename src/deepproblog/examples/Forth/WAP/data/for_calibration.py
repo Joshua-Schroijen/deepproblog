@@ -11,6 +11,7 @@ import sqlite3
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
+import problog.logic
 
 from deepproblog.utils import bytes_to_tensor, tensor_to_bytes
 
@@ -100,7 +101,7 @@ class RawWAPDatasetDatabase:
       return None
 
   def update_embedding_op1(self, WAP, rnn):
-    new_embedding = tensor_to_bytes(rnn.forward(WAP))
+    new_embedding = tensor_to_bytes(rnn.forward(problog.logic.Constant(WAP)))
     with self.connection:
       self.cursor.execute("UPDATE wap_op1_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
@@ -112,7 +113,7 @@ class RawWAPDatasetDatabase:
       self.update_embedding_op1(WAP, rnn)
 
   def update_embedding_op2(self, WAP, rnn):
-    new_embedding = tensor_to_bytes(rnn.forward(WAP))
+    new_embedding = tensor_to_bytes(rnn.forward(problog.logic.Constant(WAP)))
     with self.connection:
       self.cursor.execute("UPDATE wap_op2_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
@@ -124,7 +125,7 @@ class RawWAPDatasetDatabase:
       self.update_embedding_op2(WAP, rnn)
 
   def update_embedding_permute(self, WAP, rnn):
-    new_embedding = tensor_to_bytes(rnn.forward(WAP))
+    new_embedding = tensor_to_bytes(rnn.forward(problog.logic.Constant(WAP)))
     with self.connection:
       self.cursor.execute("UPDATE wap_permute_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
@@ -136,7 +137,7 @@ class RawWAPDatasetDatabase:
       self.update_embedding_permute(WAP, rnn)
 
   def update_embedding_swap(self, WAP, rnn):
-    new_embedding = tensor_to_bytes(rnn.forward(WAP))
+    new_embedding = tensor_to_bytes(rnn.forward(problog.logic.Constant(WAP)))
     with self.connection:
       self.cursor.execute("UPDATE wap_swap_raw_data SET embedding = ? WHERE WAP = ?;", [new_embedding, WAP]) 
 
