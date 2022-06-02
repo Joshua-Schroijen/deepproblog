@@ -67,24 +67,15 @@ class RawAddDatasetDatabase:
       return None
 
   def _is_add_samples_db_ready(self):
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural1_raw_data_train';")
-    add_neural1_raw_data_train_table_exists = (self.cursor.fetchall() != [])
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural2_raw_data_train';")
-    add_neural2_raw_data_train_table_exists = (self.cursor.fetchall() != [])
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural1_raw_data_validation';")
-    add_neural1_raw_data_validation_table_exists = (self.cursor.fetchall() != [])
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural2_raw_data_validation';")
-    add_neural2_raw_data_validation_table_exists = (self.cursor.fetchall() != [])
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_raw_data_lengths_train';")
-    add_raw_data_lengths_train_table_exists = (self.cursor.fetchall() != [])
-    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_raw_data_lengths_validation';")
-    add_raw_data_lengths_validation_table_exists = (self.cursor.fetchall() != [])
-    return (add_neural1_raw_data_train_table_exists and \
-            add_neural2_raw_data_train_table_exists and \
-            add_neural1_raw_data_validation_table_exists and \
-            add_neural2_raw_data_validation_table_exists and \
-            add_raw_data_lengths_train_table_exists and \
-            add_raw_data_lengths_validation_table_exists)
+    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural1_raw_data';")
+    add_neural1_raw_data_table_exists = (self.cursor.fetchall() != [])
+    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_neural2_raw_data';")
+    add_neural2_raw_data_table_exists = (self.cursor.fetchall() != [])
+    self.cursor.execute("SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'add_raw_data_lengths';")
+    add_raw_data_lengths_table_exists = (self.cursor.fetchall() != [])
+    return (add_neural1_raw_data_table_exists and \
+            add_neural2_raw_data_table_exists and \
+            add_raw_data_lengths_table_exists)
 
   def _get_neural1_label(self, I1, I2, Carry):
     return ((I1 + I2 + Carry) % 10)
@@ -119,7 +110,6 @@ class RawAddNeural1ValidationDataset(RawAddValidationDataset):
 
   def _encode_label(self, label):
     return F.one_hot(torch.tensor(label), num_classes = 10).type(torch.FloatTensor)
-
 
 class RawAddNeural2ValidationDataset(RawAddValidationDataset):
   def __init__(self):
