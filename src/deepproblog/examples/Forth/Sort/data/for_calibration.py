@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 
 class RawSortDatasetDatabase:
   def initialize(self):
-    self.connection = sqlite3.connect('raw_sort_dataset.sqlite', detect_types = sqlite3.PARSE_DECLTYPES)
+    self.connection = sqlite3.connect(Path(__file__).parent / 'raw_sort_dataset.sqlite', detect_types = sqlite3.PARSE_DECLTYPES)
     sqlite3.register_adapter(bool, int)
     sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
     self.cursor = self.connection.cursor()

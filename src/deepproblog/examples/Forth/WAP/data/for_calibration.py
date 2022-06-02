@@ -17,7 +17,7 @@ from deepproblog.utils import bytes_to_tensor, tensor_to_bytes
 
 class RawWAPDatasetDatabase:
   def initialize(self):
-    self.connection = sqlite3.connect('raw_wap_dataset.sqlite', detect_types = sqlite3.PARSE_DECLTYPES)
+    self.connection = sqlite3.connect(Path(__file__).parent / 'raw_wap_dataset.sqlite', detect_types = sqlite3.PARSE_DECLTYPES)
     sqlite3.register_adapter(bool, int)
     sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
     self.cursor = self.connection.cursor()

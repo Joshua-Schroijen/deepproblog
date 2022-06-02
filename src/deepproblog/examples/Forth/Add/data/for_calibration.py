@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 
 class RawAddDatasetDatabase:
   def initialize(self):
-    self.connection = sqlite3.connect('raw_add_dataset.sqlite')
+    self.connection = sqlite3.connect(Path(__file__).parent / 'raw_add_dataset.sqlite')
     self.cursor = self.connection.cursor()
     if not self._is_add_samples_db_ready():
       self.cursor.execute("CREATE TABLE add_neural1_raw_data ( I1 integer, I2 integer, Carry integer, O integer)")
