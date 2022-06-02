@@ -4,6 +4,7 @@ import torch
 from deepproblog.dataset import DataLoader, QueryDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
+from deepproblog.examples.Forth.Sort.data.for_calibration import RawSortValidationDataset
 from deepproblog.examples.Forth import EncodeModule
 from deepproblog.model import Model
 from deepproblog.network import Network

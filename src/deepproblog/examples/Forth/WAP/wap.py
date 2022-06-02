@@ -59,8 +59,9 @@ def main(
   raw_WAP_op2_validation_dataset.update_embeddings(rnn)
   raw_WAP_permute_validation_dataset.update_embeddings(rnn)
   raw_WAP_swap_validation_dataset.update_embeddings(rnn)
-  for train_network in train_networks:
-    train_network.calibrate()
+  if calibrate:
+    for train_network in train_networks:
+      train_network.calibrate()
 
   #return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
   return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
