@@ -23,16 +23,18 @@ def main(
   test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
   val = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
   # all_test = DataLoader(QueryDataset('data/tests.pl'), 16)
+  raw_add_neural1_validation_dataset = RawAddNeural1ValidationDataset()
+  raw_add_neural2_validation_dataset = RawAddNeural2ValidationDataset()
 
   net1 = EncodeModule(30, 50, 10, "tanh")
   net2 = EncodeModule(22, 10, 2, "tanh")
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(RawAddNeural1ValidationDataset(), 50))
-    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(RawAddNeural2ValidationDataset(), 50))
-    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(RawAddNeural1ValidationDataset(), 50), k = 1)
-    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(RawAddNeural2ValidationDataset(), 50), k = 1)
+    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50))
+    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50))
+    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), k = 1)
+    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), k = 1)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     network1 = Network(net1, "neural1")
@@ -55,6 +57,13 @@ def main(
     test = lambda x: [("Accuracy", get_confusion_matrix(test_model, val, verbose = 0).accuracy())],
     test_iter = 100,
   )
+
+  if calibrate:
+    network1.calibrate()
+    network2.calibrate()
+    test_network1.calibrate()
+    test_network2.calibrate()
+
   cm = get_confusion_matrix(test_model, val, verbose = 0)
   return [train_obj, cm]
 

@@ -232,6 +232,8 @@ deepproblog.egg-info/
 
 *.ipynb
 
+# SQLite databases
+*.sqlite
 
 data/FB15k/mmkb/
 data/MNIST/MNIST/processed/test.pt
