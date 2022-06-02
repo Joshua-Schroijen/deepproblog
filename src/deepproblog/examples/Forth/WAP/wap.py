@@ -59,7 +59,7 @@ def main(
   )
 
   rnn = networks[0][0]
-  for raw_dataset in raw_datasets.items():
+  for raw_dataset in raw_datasets.values():
     raw_dataset.update_embeddings(rnn)
   if calibrate:
     for train_network in train_networks[1:]:
