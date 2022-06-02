@@ -17,19 +17,23 @@ def main(
   train_queries = QueryDataset("data/train_s.pl")
   dev_queries = QueryDataset("data/dev_s.pl")
   test_queries = QueryDataset("data/test_s.pl")
-  raw_WAP_op1_validation_dataset = RawWAPOp1ValidationDataset()
-  raw_WAP_op2_validation_dataset = RawWAPOp2ValidationDataset()
-  raw_WAP_permute_validation_dataset = RawWAPPermuteValidationDataset()
-  raw_WAP_swap_validation_dataset = RawWAPSwapValidationDataset()
+  raw_datasets = {
+    "nn_permute": RawWAPPermuteValidationDataset(),
+    "nn_op1": RawWAPOp1ValidationDataset(),
+    "nn_swap": RawWAPSwapValidationDataset(),
+    "nn_op2": RawWAPOp2ValidationDataset()
+  }
 
   networks = get_networks(0.005, 0.5)
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    train_networks = [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(RawWAPSwapValidationDataset(), 10), x[2]) for x in networks]
+    train_networks = \
+      [Network(networks[0][0], networks[0][1], networks[0][2])] + \
+      [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(raw_datasets[x[1]], 10), x[2]) for x in networks[1:]]
     test_networks = \
-      [TemperatureScalingNetwork(networks[0][0], networks[0][1], DataLoader(RawWAPSwapValidationDataset(), 10))] + \
-      [TemperatureScalingNetwork(x[0], x[1], DataLoader(RawWAPSwapValidationDataset(), 10), k = 1) for x in networks[1:]]
+      [Network(networks[0][0], networks[0][1])] + \
+      [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(raw_datasets[x[1]], 10), k = 1) for x in networks[1:]]
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     train_networks = [Network(x[0], x[1], x[2]) for x in networks]
@@ -55,12 +59,10 @@ def main(
   )
 
   rnn = networks[0][0]
-  raw_WAP_op1_validation_dataset.update_embeddings(rnn)
-  raw_WAP_op2_validation_dataset.update_embeddings(rnn)
-  raw_WAP_permute_validation_dataset.update_embeddings(rnn)
-  raw_WAP_swap_validation_dataset.update_embeddings(rnn)
+  for raw_dataset in raw_datasets.items():
+    raw_dataset.update_embeddings(rnn)
   if calibrate:
-    for train_network in train_networks:
+    for train_network in train_networks[1:]:
       train_network.calibrate()
 
   #return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
