@@ -13,7 +13,7 @@ from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECE
 from deepproblog.dataset import DataLoader 
 from deepproblog.train import train_model
 from deepproblog.examples.HWF.data import HWFDataset, hwf_images
-from deepproblog.examples.HWF.data.for_calibration import RawHWFNumbersValidationDataset, RawHWFOperatorsValidationDataset
+from deepproblog.examples.HWF.data.for_calibration import RawHWFDatasetDatabase, RawHWFNumbersValidationDataset, RawHWFOperatorsValidationDataset
 from deepproblog.examples.HWF.network import SymbolEncoder, SymbolClassifier
 from deepproblog.heuristics import *
 from deepproblog.utils import format_time_precise, get_configuration, config_to_string
@@ -44,14 +44,17 @@ def main(
   curriculum = configuration["curriculum"]
   print("Training HWF with N={} and curriculum={}".format(N, curriculum))
 
+  
   if curriculum:
-    dataset = HWFDataset("train2", lambda x: x <= N)
-    val_dataset = HWFDataset("val", lambda x: x <= N)
-    test_dataset = HWFDataset("test", lambda x: x <= N)
+    dataset_filter = lambda x: x <= N 
+    dataset = HWFDataset("train2", dataset_filter)
+    val_dataset = HWFDataset("val", dataset_filter)
+    test_dataset = HWFDataset("test", dataset_filter)
   else:
-    dataset = HWFDataset("train2", lambda x: x == N)
-    val_dataset = HWFDataset("val", lambda x: x == N)
-    test_dataset = HWFDataset("test", lambda x: x == N)
+    dataset_filter = lambda x: x == N
+    dataset = HWFDataset("train2", dataset_filter)
+    val_dataset = HWFDataset("val", dataset_filter)
+    test_dataset = HWFDataset("test", dataset_filter)
   loader = DataLoader(dataset, 32, shuffle = True)
 
   encoder = SymbolEncoder()
@@ -60,8 +63,12 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    net1_valid_loader = TorchDataLoader(RawHWFNumbersValidationDataset(), 32, shuffle = True)
-    net2_valid_loader = TorchDataLoader(RawHWFOperatorsValidationDataset(), 32, shuffle = True)
+    raw_hwf_dataset_database = RawHWFDatasetDatabase()
+    raw_hwf_dataset_database.initialize(dataset_filter)
+    raw_hwf_numbers_validation_dataset = RawHWFNumbersValidationDataset()
+    raw_hwf_operators_validation_dataset = RawHWFOperatorsValidationDataset()
+    net1_valid_loader = TorchDataLoader(raw_hwf_numbers_validation_dataset, 32, shuffle = True)
+    net2_valid_loader = TorchDataLoader(raw_hwf_operators_validation_dataset, 32, shuffle = True)
     net1 = TemperatureScalingNetwork(network1, "net1", net1_valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True)
     net2 = TemperatureScalingNetwork(network2, "net2", net2_valid_loader, Adam(network2.parameters(), lr = 3e-3), batching = True)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
@@ -95,6 +102,10 @@ def main(
       ("Test_accuracy", get_confusion_matrix(x, test_dataset, eps = 1e-6).accuracy()),
     ],
   )
+
+  if calibrate == True:
+    net1.calibrate()
+    net2.calibrate()
 
   model.save_state("models/" + name + ".pth")
   cm = get_confusion_matrix(model, test_dataset, eps = 1e-6, verbose = 0)
