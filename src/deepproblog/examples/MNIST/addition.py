@@ -64,7 +64,7 @@ def main(
       net = TemperatureScalingNetwork(network, "mnist_net", train_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
       networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
-      net = Network(network, "mnist_net", batching=True)
+      net = Network(network, "mnist_net", batching = True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
 
   model = Model("models/addition.pl", [net])
@@ -92,6 +92,9 @@ def main(
       "Accuracy {}".format(get_confusion_matrix(model, test_set, verbose = 0).accuracy())
     )
     train.logger.write_to_file("log/" + name)
+
+  if calibrate == True:
+    net.calibrate()
 
   return [train, get_confusion_matrix(model, test_set, verbose = 0)]
 
