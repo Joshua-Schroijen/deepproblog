@@ -3,6 +3,7 @@ import os
 import torch
 import torchvision.transforms as transforms
 import torch.nn.functional as F
+from torch.utils.data import Dataset as TorchDataset
 
 from deepproblog.dataset import ImageDataset, Subset
 from deepproblog.query import Query
@@ -43,7 +44,7 @@ class Coins(ImageDataset):
     def __len__(self):
         return len(self.data)
 
-class RawCoinsValidationDataset(ImageDataset):
+class RawCoinsValidationDataset(TorchDataset):
     def __init__(self, coins_dataset):
         self.coins_dataset = coins_dataset
         self.labels = self._get_labels()
