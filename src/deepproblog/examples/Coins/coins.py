@@ -1,11 +1,11 @@
 import fire
 import torch
-
 from torch.utils.data import DataLoader as TorchDataLoader
+
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
-from deepproblog.examples.Coins.data.dataset import train_dataset, test_dataset
+from deepproblog.examples.Coins.data.dataset import train_dataset, test_dataset, RawCoinsNet1ValidationDataset, RawCoinsNet2ValidationDataset
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
@@ -27,7 +27,8 @@ def main(
   if calibrate == True:
     rest_train_set, validation_set = split_train_set(train_dataset)
     train_loader = DataLoader(rest_train_set, batch_size)
-    calibration_valid_loader = TorchDataLoader(validation_set, batch_size)
+    calibration_net1_valid_loader = TorchDataLoader(RawCoinsNet1ValidationDataset(validation_set), batch_size)
+    calibration_net2_valid_loader = TorchDataLoader(RawCoinsNet2ValidationDataset(validation_set), batch_size)
   else:
     train_loader = DataLoader(train_dataset, batch_size)
   lr = 1e-4
@@ -36,8 +37,8 @@ def main(
   coin_network1 = smallnet(num_classes = 2, pretrained = True)
   coin_network2 = smallnet(num_classes = 2, pretrained = True)
   if calibrate == True:
-    coin_net1 = TemperatureScalingNetwork(coin_network1, "net1", calibration_valid_loader, batching = True)
-    coin_net2 = TemperatureScalingNetwork(coin_network2, "net2", calibration_valid_loader, batching = True)
+    coin_net1 = TemperatureScalingNetwork(coin_network1, "net1", calibration_net1_valid_loader, batching = True)
+    coin_net2 = TemperatureScalingNetwork(coin_network2, "net2", calibration_net2_valid_loader, batching = True)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     coin_net1 = Network(coin_network1, "net1", batching = True)
@@ -62,6 +63,10 @@ def main(
     test = lambda x: [("Accuracy", get_confusion_matrix(x, test_dataset).accuracy())],
     infoloss = 0.25
   )
+
+  if calibrate:
+    coin_net1.calibrate()
+    coin_net2.calibrate()
 
   return [train_obj, get_confusion_matrix(model, test_dataset, verbose = 0)]
 
