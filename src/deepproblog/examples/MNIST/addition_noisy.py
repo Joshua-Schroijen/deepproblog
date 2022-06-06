@@ -49,7 +49,7 @@ def main(
   network = MNIST_Net()
   networks_evolution_collectors = {}
   if calibrate == True:
-    validation_loader = TorchDataLoader(MutatingRawDataset(noisy_dataset_validation, noise_raw), 2)
+    validation_loader = TorchDataLoader(MutatingRawDataset(noisy_dataset_validation, noise_raw, 0.2), 2)
     net = TemperatureScalingNetwork(network, "mnist_net", validation_loader, batching = True)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:

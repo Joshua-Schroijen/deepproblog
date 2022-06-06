@@ -1,5 +1,6 @@
 import io
 import os
+import random
 import sys
 from configparser import ConfigParser
 from datetime import datetime
@@ -236,13 +237,21 @@ def bytes_to_tensor(blob):
   return torch.load(buffer)
 
 class MutatingRawDataset(Dataset):
-  def __init__(self, inner_raw_dataset, mutator):
+  def __init__(self, inner_raw_dataset, mutator, p, seed = None):
     super(Dataset, self).__init__()
     self.inner_raw_dataset = inner_raw_dataset
     self.mutator = mutator
+    self.p = p
+    if seed is None:
+        seed = random.SystemRandom().randint(0, 2 ** 64)
+    self.seed = seed
 
   def __len__(self):
     return len(self.inner_raw_dataset)
 
   def __getitem__(self, idx):
-    return self.mutator(idx, self.inner_raw_dataset[idx])
+    rng = random.Random(self.seed ^ idx)
+    if rng.random() < self.p:
+      return self.mutator(idx, self.inner_raw_dataset[idx])
+    else:
+      return self.inner_raw_dataset[idx]
