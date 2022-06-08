@@ -12,6 +12,7 @@ from deepproblog.examples.MNIST.data import (
     MNIST_train,
     MNIST_test,
     addition,
+    RawMNISTOperator
 )
 from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
@@ -49,7 +50,7 @@ def main(
   if calibrate == True:
     rest_train_set, validation_set = split_dataset(train_set)
     loader = DataLoader(rest_train_set, batch_size, False)
-    validation_loader_for_calibration = TorchDataLoader(validation_set, batch_size)
+    validation_loader_for_calibration = TorchDataLoader(RawMNISTOperator(validation_set), batch_size)
   else:
     loader = DataLoader(train_set, batch_size, False)
 
