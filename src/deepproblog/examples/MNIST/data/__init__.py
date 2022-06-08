@@ -2,8 +2,10 @@ import itertools
 import json
 import random
 from pathlib import Path
+import torch
 import torchvision
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 from torch.utils.data import Dataset as TorchDataset
 from typing import Callable, List, Iterable, Tuple
 
@@ -200,3 +202,17 @@ class MNISTOperator(Dataset, TorchDataset):
 
     def __len__(self):
         return len(self.data)
+
+class RawMNISTOperator(TorchDataset):
+    def __init__(self, MNIST_operator: MNISTOperator):
+        self.MNIST_operator = MNIST_operator
+
+    def __getitem__(self, idx: int):
+        l1, l2, label = self.MNIST_operator[idx]
+        return (l1, l2, self._encode_label(label))
+
+    def __len__(self):
+        return len(self.MNIST_operator)
+
+    def _encode_label(self, label):
+        return F.one_hot(torch.tensor(label), num_classes = 10).type(torch.FloatTensor)

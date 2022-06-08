@@ -1,8 +1,8 @@
 import fire
 from json import dumps
-import sys
 
 import torch
+from torch.utils.data import DataLoader as TorchDataLoader
 
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ApproximateEngine, ExactEngine
@@ -18,11 +18,9 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
-from deepproblog.utils import get_configuration, format_time_precise, config_to_string
+from deepproblog.utils import get_configuration, format_time_precise, config_to_string, split_dataset
 
-import torchvision
 import torch.utils.data
-from pathlib import Path
 
 def main(
   i = 1,
@@ -47,6 +45,14 @@ def main(
   train_set = addition(configuration["N"], "train")
   test_set = addition(configuration["N"], "test")
 
+  batch_size = 2
+  if calibrate == True:
+    rest_train_set, validation_set = split_dataset(train_set)
+    loader = DataLoader(rest_train_set, batch_size, False)
+    validation_loader_for_calibration = TorchDataLoader(validation_set, batch_size)
+  else:
+    loader = DataLoader(train_set, batch_size, False)
+
   network = MNIST_Net()
 
   pretrain = configuration["pretrain"]
@@ -56,12 +62,7 @@ def main(
       )
   networks_evolution_collectors = {}
   if calibrate == True:
-      transform_for_calibration = torchvision.transforms.Compose(
-        [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.5,), (0.5,))]
-      )
-      train_set_for_calibration = torchvision.datasets.MNIST(root = str(Path(__file__).parent.joinpath('data')), train = True, download = True, transform = transform_for_calibration)
-      train_loader_for_calibration = torch.utils.data.DataLoader(train_set_for_calibration, batch_size = 64, shuffle = True)
-      net = TemperatureScalingNetwork(network, "mnist_net", train_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+      net = TemperatureScalingNetwork(network, "mnist_net", validation_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
       networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
       net = Network(network, "mnist_net", batching = True)
@@ -82,7 +83,6 @@ def main(
   model.add_tensor_source("train", MNIST_train)
   model.add_tensor_source("test", MNIST_test)
 
-  loader = DataLoader(train_set, 2, False)
   train = train_model(model, loader, 1, networks_evolution_collectors, log_iter = 100, profile = 0)
   model.save_state("snapshot/" + name + ".pth")
 

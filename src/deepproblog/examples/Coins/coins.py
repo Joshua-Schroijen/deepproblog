@@ -10,14 +10,9 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
+from deepproblog.utils import split_dataset
 from deepproblog.utils.standard_networks import smallnet
 from deepproblog.utils.stop_condition import Threshold, StopOnPlateau
-
-def split_train_set(train_set):
-  train_set_length = len(train_set)
-  rest_train_set = train_set.subset(round(0.8 * train_set_length))
-  validation_set = train_set.subset(round(0.8 * train_set_length), train_set_length)
-  return [rest_train_set, validation_set]
 
 def main(
   calibrate = False,
@@ -25,7 +20,7 @@ def main(
 ):
   batch_size = 5
   if calibrate == True:
-    rest_train_set, validation_set = split_train_set(train_dataset)
+    rest_train_set, validation_set = split_dataset(train_dataset)
     train_loader = DataLoader(rest_train_set, batch_size)
     calibration_net1_valid_loader = TorchDataLoader(RawCoinsNet1ValidationDataset(validation_set), batch_size)
     calibration_net2_valid_loader = TorchDataLoader(RawCoinsNet2ValidationDataset(validation_set), batch_size)

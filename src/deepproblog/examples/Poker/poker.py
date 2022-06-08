@@ -10,14 +10,9 @@ from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.optimizer import SGD
 from deepproblog.train import train_model
+from deepproblog.utils import split_dataset
 from deepproblog.utils.standard_networks import smallnet
 import torch
-
-def split_train_set(train_set):
-  train_set_length = len(train_set)
-  rest_train_set = train_set.subset(round(0.8 * train_set_length))
-  validation_set = train_set.subset(round(0.8 * train_set_length), train_set_length)
-  return [rest_train_set, validation_set]
 
 def main(
   calibrate = False,
@@ -34,7 +29,7 @@ def main(
   batch_size = 50
 
   if calibrate == True:
-    rest_train_set, validation_set = split_train_set(datasets[dataset])
+    rest_train_set, validation_set = split_dataset(datasets[dataset])
     train_loader = DataLoader(rest_train_set, batch_size)
     calibration_valid_loader = TorchDataLoader(RawPokerNet1ValidationDataset(validation_set), batch_size)
   else:
