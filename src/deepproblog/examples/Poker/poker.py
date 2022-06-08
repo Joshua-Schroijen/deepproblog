@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader as TorchDataLoader
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
-from deepproblog.examples.Poker import PokerSeparate
+from deepproblog.examples.Poker import PokerSeparate, RawPokerNet1ValidationDataset
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
@@ -36,7 +36,7 @@ def main(
   if calibrate == True:
     rest_train_set, validation_set = split_train_set(datasets[dataset])
     train_loader = DataLoader(rest_train_set, batch_size)
-    calibration_valid_loader = TorchDataLoader(validation_set, batch_size)
+    calibration_valid_loader = TorchDataLoader(RawPokerNet1ValidationDataset(validation_set), batch_size)
   else:
     train_loader = DataLoader(datasets[dataset], batch_size)
 
@@ -46,7 +46,8 @@ def main(
       smallnet(pretrained = True, num_classes = 4, size = (100, 150)),
       "net1",
       calibration_valid_loader,
-      batching = True
+      batching = True,
+      calibrate_after_each_train_iteration = calibrate_after_each_train_iteration
     )
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
@@ -75,7 +76,11 @@ def main(
           ("Accuracy", get_confusion_matrix(model, datasets["fair_test"]).accuracy())
       ],
       infoloss = 0.5,
-  ) 
+  )
+
+  if calibrate == True:
+    net.calibrate()
+
   cm = get_confusion_matrix(model, datasets["fair_test"], verbose = 0)
   return [train_obj, cm]
 

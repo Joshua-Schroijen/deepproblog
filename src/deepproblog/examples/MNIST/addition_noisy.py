@@ -30,7 +30,8 @@ def noise_raw(_, item: Tuple[torch.Tensor, torch.Tensor, int]):
   return (item[0], item[1], randint(0, 18))
 
 def main(
-  calibrate = False
+  calibrate = False,
+  calibrate_after_each_train_iteration = False
 ):
   dataset = MNISTOperator(
     dataset_name = "train",
@@ -50,7 +51,7 @@ def main(
   networks_evolution_collectors = {}
   if calibrate == True:
     validation_loader = TorchDataLoader(MutatingRawDataset(noisy_dataset_validation, noise_raw, 0.2), 2)
-    net = TemperatureScalingNetwork(network, "mnist_net", validation_loader, batching = True)
+    net = TemperatureScalingNetwork(network, "mnist_net", validation_loader, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     net = Network(network, "mnist_net", batching = True)

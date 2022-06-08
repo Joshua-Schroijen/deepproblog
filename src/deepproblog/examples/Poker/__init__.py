@@ -1,8 +1,12 @@
 from collections import defaultdict
-
-import torchvision.transforms as transforms
 from typing import Tuple, List
-from deepproblog.dataset import ImageDataset
+
+import torch
+import torchvision.transforms as transforms
+import torch.nn.functional as F
+from torch.utils.data import Dataset as TorchDataset
+
+from deepproblog.dataset import ImageDataset, Subset
 from deepproblog.query import Query
 from problog.logic import Term, Constant, list2term
 
@@ -168,3 +172,40 @@ def get_probabilities(c1, c2, use_suits, p):
         result = get_outcome(h1, h2)
         outcomes[result] += p[values.index(c[0])] * 0.25
     return outcomes
+
+class RawPokerNet1ValidationDataset(TorchDataset):
+    def __init__(
+        self, poker_dataset
+    ):
+        self.poker_dataset = poker_dataset
+        self.labels = self._get_labels()
+
+    def _get_labels(self):
+        labels = []
+        line_no = 0
+        poker_dataset_is_subset = isinstance(self.poker_dataset, Subset)
+        with open("data/labels/{}.csv".format(self.poker_dataset.dataset)) as f:
+            for line in f:
+                if poker_dataset_is_subset and not \
+                   (line_no < self.poker_dataset.j and \
+                    line_no >= self.poker_dataset.i):
+                    continue
+                else:
+                    cards = [c.split(" of ")[0] for c in line.strip().split(",")]
+                    labels.extend(cards)
+
+                line_no += 1
+
+    def _encode_card_label(self, card_label):
+        card_number = (0 if card_label == "jack" else (
+            1 if card_label == "queen" else (
+                2 if card_label == "king" else 3
+        )))
+        return F.one_hot(torch.tensor(card_number), num_classes = 4).type(torch.FloatTensor)
+
+    def __len__(self):
+        return len(self.poker_dataset)
+
+    def __getitem__(self, idx):
+        image_idx = (idx // 4, idx % 4)
+        return self.poker_dataset[image_idx], self._encode_card_label(self.labels[idx])
