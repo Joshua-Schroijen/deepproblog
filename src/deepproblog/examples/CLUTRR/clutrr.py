@@ -12,7 +12,7 @@ from deepproblog.examples.CLUTRR.architecture import Encoder, RelNet, GenderNet
 from deepproblog.examples.CLUTRR.data import CLUTRR, dataset_names
 from deepproblog.heuristics import *
 from deepproblog.train import TrainObject
-from deepproblog.utils import get_configuration, config_to_string, format_time_precise
+from deepproblog.utils import get_configuration, config_to_string, format_time_precise, split_dataset
 from deepproblog.utils.stop_condition import Threshold, StopOnPlateau
 
 def main(
@@ -31,10 +31,10 @@ def main(
 
   clutrr = CLUTRR(configuration["dataset"])
   dataset = clutrr.get_dataset(".*train", gender = True, type = "split")
-  val_dataset = dataset.subset(100)
+  train_dataset, val_dataset = split_dataset(dataset)
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
-  loader = DataLoader(dataset, 4)
+  loader = DataLoader(train_dataset, 4)
   val_loader = DataLoader(val_dataset, 4)
 
   embed_size = 32

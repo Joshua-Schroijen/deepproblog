@@ -256,7 +256,7 @@ class MutatingRawDataset(Dataset):
     else:
       return self.inner_raw_dataset[idx]
 
-def split_dataset(dataset, split_ratio = 0.8):
+def split_dataset(dataset: Dataset, split_ratio: float = 0.8):
   dataset_length = len(dataset)
   dataset_part_1 = dataset.subset(round(split_ratio * dataset_length))
   dataset_part_2 = dataset.subset(round(split_ratio * dataset_length), dataset_length)

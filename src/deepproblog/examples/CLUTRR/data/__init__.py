@@ -137,6 +137,7 @@ class Story(object):
                 raise Exception(answer + " not in labels")
             self.answer = answer
 
+            self.genders = {idx:g.split(":")[1].lower() for idx, g in enumerate(genders.strip().split(","))}
             genders = [g.split(":")[0].lower() for g in genders.strip().split(",")]
 
             for punctuation in [".", ",", "'", "!", ";"]:
@@ -220,6 +221,12 @@ class Story(object):
 
     def get_relations(self):
         return self.edges
+
+    def get_genders(self):
+        return self.genders
+
+    def get_entities(self):
+        return self.entities
 
     def to_query_edges(self):
         entities = [Constant(x) for x in sorted(self.entities.values())]
