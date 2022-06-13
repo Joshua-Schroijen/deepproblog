@@ -92,7 +92,7 @@ class Dataset(ABC):
 
 class DataLoader(object):
 
-    __slots__ = ("dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i")
+    __slots__ = ("dataset", "original_dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i")
 
     def __init__(
         self, dataset: Dataset, batch_size: int, shuffle: bool = True, seed=None
@@ -105,6 +105,7 @@ class DataLoader(object):
         :param seed: Seed for random shuffle.
         """
         self.dataset = dataset.to_queries()
+        self.original_dataset = dataset
         self.batch_size = batch_size
         self.length = len(self.dataset)
         self.shuffle = shuffle

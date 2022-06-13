@@ -1,23 +1,29 @@
+import ast
 from pathlib import Path
 import sqlite3
 from torch.utils.data import Dataset as TorchDataset
 
 from problog.logic import list2term, Term, Constant
 
+from deepproblog.utils import parse
+
 class RawCLUTRRDatasetDatabase:
   def initialize(self):
     self.connection = sqlite3.connect(Path(__file__).parent / 'raw_CLUTRR_dataset.sqlite')
     self.cursor = self.connection.cursor()
     if not self._is_CLUTRR_samples_db_ready():
-      self.cursor.execute("CREATE TABLE CLUTRR_rel_extract_raw_data ( sentence_id integer, entity integer )")
-      self.cursor.execute("CREATE TABLE CLUTRR_gender_net_raw_data ( sentences text, swap boolean )")
-      with open(Path(__file__).parent / "swap_net.txt", "r") as swap_net:
-        swap_net_samples = [ast.literal_eval(s.strip()) for s in swap_net.readlines()]
+      self.cursor.execute("CREATE TABLE CLUTRR_rel_extract_raw_data ( sentences text, entity integer )")
+      self.cursor.execute("CREATE TABLE CLUTRR_gender_net_raw_data ( sentences text, entity integer, gender integer )")
+      with open(Path(__file__).parent / "rel_extract.txt", "r") as rel_extract:
+        rel_extract_samples = [ast.literal_eval(s.strip()) for s in rel_extract.readlines()]
+      with open(Path(__file__).parent / "gender_net.txt", "r") as gender_net:
+        gender_net_samples = [ast.literal_eval(s.strip()) for s in gender_net.readlines()]
       with self.connection:
-        for sample in swap_net_samples:
-          X, Y = sample
+        for sample in gender_net_samples:
+          sentences, entity = sample
+          sentences = parse(sentences)
           swap = self._get_swap_label(X, Y)
-          self.cursor.execute("INSERT INTO sort_raw_data VALUES (:X, :Y, :swap)", {'X': X, 'Y': Y, 'swap': swap})
+          self.cursor.execute("INSERT INTO CLUTRR_gender_net_raw_data VALUES (:sentences, :entity, :gender)", {'sentences': sentences, 'entity': entity, 'gender': gender})
 
   def get_sample(self, i):
     self.cursor.execute(f"SELECT * FROM sort_raw_data LIMIT 1 OFFSET {i};")
