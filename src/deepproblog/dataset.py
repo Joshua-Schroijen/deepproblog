@@ -127,6 +127,7 @@ class DataLoader(object):
             self.indices = indices
         else:
             self.i = iter(range(self.length))
+            self.indices = list(range(self.length))
 
     def __next__(self):
         if self.i is None:
