@@ -189,6 +189,13 @@ class Story(object):
             if len(sentences[i]) > 0
         ]
 
+    def get_sentences_connected(self):
+        return [
+          (disconnected_sentence[0], " ".join(disconnected_sentence[1]))
+          for disconnected_sentence
+          in self.get_sentences()
+        ]
+
     def get_negatives(self, nr_negatives, gender):
         if nr_negatives < 1:
             return []
