@@ -92,7 +92,7 @@ class Dataset(ABC):
 
 class DataLoader(object):
 
-    __slots__ = ("dataset", "original_dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i")
+    __slots__ = ("dataset", "original_dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i", "indices")
 
     def __init__(
         self, dataset: Dataset, batch_size: int, shuffle: bool = True, seed=None
