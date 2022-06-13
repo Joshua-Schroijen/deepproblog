@@ -8,7 +8,7 @@ from itertools import islice
 from pathlib import Path
 from statistics import mean, stdev
 from time import strftime
-from typing import Union, Any, Dict
+from typing import Union, Any, Dict, List
 
 import torch
 from torch.utils.data import Dataset
@@ -261,3 +261,13 @@ def split_dataset(dataset: Dataset, split_ratio: float = 0.8):
   dataset_part_1 = dataset.subset(round(split_ratio * dataset_length))
   dataset_part_2 = dataset.subset(round(split_ratio * dataset_length), dataset_length)
   return [dataset_part_1, dataset_part_2]
+
+def load_list(the_list: List[Any], batch_size: int):
+    if batch_size < 1:
+        return []
+    start = 0
+    end = batch_size
+    while start < len(the_list):
+        yield the_list[start:end]
+        start += batch_size
+        end += batch_size
