@@ -124,6 +124,7 @@ class DataLoader(object):
             indices = list(range(self.length))
             self.rng.shuffle(indices)
             self.i = iter(indices)
+            self.indices = indices
         else:
             self.i = iter(range(self.length))
 

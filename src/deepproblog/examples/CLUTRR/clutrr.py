@@ -35,7 +35,7 @@ def main(
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
   loader = DataLoader(train_dataset, 4)
-  val_loader = DataLoader(val_dataset, 4)
+  val_loader = DataLoader(val_dataset, 4) 
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)

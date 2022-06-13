@@ -5,6 +5,7 @@ from typing import Dict, List, Callable, Union
 from deepproblog.dataset import DataLoader
 from deepproblog.model import Model
 from deepproblog.query import Query
+from deepproblog.utils import load_list
 from deepproblog.utils.logger import Logger
 from deepproblog.utils.stop_condition import EpochStop
 from deepproblog.utils.stop_condition import StopCondition
@@ -125,7 +126,9 @@ class TrainObject(object):
             self.model.optimizer.step_epoch()
             if verbose and epoch_size > log_iter:
                 print("Epoch", self.epoch + 1)
+            index_loader = load_list(loader.indices, loader.batch_size)
             for batch in loader:
+                batch_indices = next(index_loader)
                 if self.interrupt:
                     break
                 self.i += 1
