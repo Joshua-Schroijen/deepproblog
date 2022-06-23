@@ -1,4 +1,5 @@
 import fire
+from torch.utils.data import DataLoader as TorchDataLoader
 import sys
 from json import dumps
 
@@ -10,6 +11,7 @@ from deepproblog.model import Model
 from deepproblog.dataset import DataLoader
 from deepproblog.examples.CLUTRR.architecture import Encoder, RelNet, GenderNet
 from deepproblog.examples.CLUTRR.data import CLUTRR, dataset_names
+from deepproblog.examples.CLUTRR.data.for_calibration import RawCLUTRRRelExtractValidationDataset, RawCLUTRRGenderNetValidationDataset
 from deepproblog.heuristics import *
 from deepproblog.train import TrainObject
 from deepproblog.utils import get_configuration, config_to_string, format_time_precise, split_dataset
@@ -34,30 +36,32 @@ def main(
   train_dataset, val_dataset = split_dataset(dataset)
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
+  raw_datasets = {
+    "rel_extract": RawCLUTRRRelExtractValidationDataset(),
+    "gender_net": RawCLUTRRGenderNetValidationDataset()
+  }
   loader = DataLoader(train_dataset, 4)
-  val_loader = DataLoader(val_dataset, 4) 
+  rel_net_val_loader = DataLoader(raw_datasets["rel_extract"], 4)
+  gender_net_val_loader = DataLoader(raw_datasets["gender_net"], 4)
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)
 
   networks_evolution_collectors = {}
+  lstm_net = Network(
+    lstm, "encoder", optimizer = torch.optim.Adam(lstm.parameters(), lr = 1e-2)
+  )
   if calibrate == True:
-    lstm_net = TemperatureScalingNetwork(
-      lstm, "encoder", val_loader, optimizer = torch.optim.Adam(lstm.parameters(), lr = 1e-2)
-    )
-    rel_net = Network(RelNet(embed_size, 2 * embed_size), "rel_extract", val_loader)
+    rel_net = TemperatureScalingNetwork(RelNet(embed_size, 2 * embed_size), "rel_extract", rel_net_val_loader)
     gender_net = GenderNet(clutrr.get_vocabulary(), embed_size)
-    gender_net = Network(
+    gender_net = TemperatureScalingNetwork(
       gender_net,
       "gender_net",
-      val_loader,
+      gender_net_val_loader,
       optimizer = torch.optim.Adam(gender_net.parameters(), lr = 1e-2),
     )
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
-  else:
-    lstm_net = Network(
-      lstm, "encoder", optimizer = torch.optim.Adam(lstm.parameters(), lr = 1e-2)
-    )    
+  else:   
     rel_net = Network(RelNet(embed_size, 2 * embed_size), "rel_extract")
     gender_net = GenderNet(clutrr.get_vocabulary(), embed_size)
     gender_net = Network(
@@ -65,7 +69,6 @@ def main(
       "gender_net",
       optimizer=torch.optim.Adam(gender_net.parameters(), lr=1e-2),
     )
-
   rel_net.optimizer = torch.optim.Adam(rel_net.parameters(), lr = 1e-2)
 
   model_filename = "model_forward.pl"
@@ -94,6 +97,11 @@ def main(
   )
 
   model.save_state("models/" + name + ".pth")
+
+  raw_datasets["rel_extract"].update_embeddings(lstm)
+  if calibrate:
+    rel_net.calibrate()
+    gender_net.calibrate()
 
   for dataset in test_datasets:
     cm = get_confusion_matrix(model, test_datasets[dataset], verbose = 0)
