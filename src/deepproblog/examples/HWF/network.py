@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+from deepproblog.network import ClassificationNetworkModule
 
 class SymbolEncoder(nn.Module):
     def __init__(self):
@@ -27,8 +28,7 @@ class SymbolEncoder(nn.Module):
         x = self.mlp(x)
         return x
 
-
-class SymbolClassifier(nn.Module):
+class SymbolClassifier(ClassificationNetworkModule):
     def __init__(self, encoder, N=10):
         super(SymbolClassifier, self).__init__()
         self.encoder = encoder
@@ -39,4 +39,9 @@ class SymbolClassifier(nn.Module):
         x = self.encoder(x)
         x = self.fc2(x)
         x = self.softmax(x)
+        return x
+
+    def get_output_logits(self, input):
+        x = self.encoder(x)
+        x = self.fc2(x)
         return x
