@@ -42,6 +42,5 @@ class SymbolClassifier(ClassificationNetworkModule):
         return x
 
     def get_output_logits(self, input):
-        x = self.encoder(x)
-        x = self.fc2(x)
+        x = self.fc2(self.encoder(input))
         return x
