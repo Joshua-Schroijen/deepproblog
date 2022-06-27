@@ -3,8 +3,10 @@ import json
 from pathlib import Path
 import sqlite3
 
+import torch
 from torchvision.io import read_image
 from torch.utils.data import Dataset
+import torch.nn.functional as F
 
 from deepproblog.examples.HWF.data import Expression
 
@@ -18,9 +20,9 @@ class RawHWFDatasetDatabase:
       number_samples, operator_samples = self._load_samples_from_expressions_file(filter)
       with self.connection:
         for sample, label in number_samples:
-          self.cursor.execute("INSERT INTO hwf_raw_data VALUES (:path, :label, :class)", {'path': str(sample.resolve()), 'label': label, 'class': 'number'})
+          self.cursor.execute("INSERT INTO hwf_raw_data VALUES (:path, :label, :class)", {'path': sample, 'label': label, 'class': 'number'})
         for sample, label in operator_samples:
-          self.cursor.execute("INSERT INTO hwf_raw_data VALUES (:path, :label, :class)", {'path': str(sample.resolve()), 'label': label, 'class': 'operator'})
+          self.cursor.execute("INSERT INTO hwf_raw_data VALUES (:path, :label, :class)", {'path': sample, 'label': label, 'class': 'operator'})
         self.cursor.execute("INSERT INTO hwf_raw_data_class_lengths VALUES (:class, :length)", {'class': 'number', 'length': len(number_samples)})
         self.cursor.execute("INSERT INTO hwf_raw_data_class_lengths VALUES (:class, :length)", {'class': 'operator', 'length': len(operator_samples)})
 
@@ -126,8 +128,12 @@ class RawHWFNumbersValidationDataset(RawHWFValidationDataset):
 
   def __getitem__(self, idx):
     img_path, label = self.dataset_db.get_numbers_sample(idx)
+    img_path = str(Path(__file__).parent / "Handwritten_Math_Symbols" / img_path)
     image = read_image(img_path)
-    return image, label
+    return image, self._encode_label(label)
+
+  def _encode_label(self, number_label):
+    return F.one_hot(torch.tensor(int(number_label)), num_classes = 10).type(torch.FloatTensor)
 
 class RawHWFOperatorsValidationDataset(RawHWFValidationDataset):
   def __init__(self, dataset_db):
@@ -138,5 +144,16 @@ class RawHWFOperatorsValidationDataset(RawHWFValidationDataset):
 
   def __getitem__(self, idx):
     img_path, label = self.dataset_db.get_operators_sample(idx)
+    img_path = str(Path(__file__).parent / "Handwritten_Math_Symbols" / img_path)
     image = read_image(img_path)
-    return image, label
+    return image, self._encode_label(label)
+
+  def _encode_label(self, operator_label):
+    operator_number = (
+      0 if operator_label == "+" else (
+        1 if operator_label == "-" else (
+          2 if operator_label == "*" else 3
+        )
+      )
+    )
+    return F.one_hot(torch.tensor(operator_number), num_classes = 4).type(torch.FloatTensor)
