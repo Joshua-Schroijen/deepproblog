@@ -105,9 +105,10 @@ class RawHWFDatasetDatabase:
     return number_samples, operator_samples
 
 class RawHWFValidationDataset(Dataset, ABC):
-  def __init__(self, dataset_db):
+  def __init__(self):
     super(Dataset, self).__init__()
-    self.dataset_db = dataset_db
+    self.dataset_db = RawHWFDatasetDatabase()
+    self.dataset_db.initialize()
 
   @abstractmethod
   def __len__(self):
@@ -118,8 +119,8 @@ class RawHWFValidationDataset(Dataset, ABC):
     pass
 
 class RawHWFNumbersValidationDataset(RawHWFValidationDataset):
-  def __init__(self, dataset_db):
-    super().__init__(dataset_db)
+  def __init__(self):
+    super().__init__()
 
   def __len__(self):
     return self.dataset_db.get_length_numbers()
@@ -130,8 +131,8 @@ class RawHWFNumbersValidationDataset(RawHWFValidationDataset):
     return image, label
 
 class RawHWFOperatorsValidationDataset(RawHWFValidationDataset):
-  def __init__(self, dataset_db):
-    super().__init__(dataset_db)
+  def __init__(self):
+    super().__init__()
 
   def __len__(self):
     return self.dataset_db.get_length_operators()
