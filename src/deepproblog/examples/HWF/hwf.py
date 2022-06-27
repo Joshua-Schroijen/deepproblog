@@ -65,8 +65,8 @@ def main(
   if calibrate == True:
     raw_hwf_dataset_database = RawHWFDatasetDatabase()
     raw_hwf_dataset_database.initialize(dataset_filter)
-    raw_hwf_numbers_validation_dataset = RawHWFNumbersValidationDataset()
-    raw_hwf_operators_validation_dataset = RawHWFOperatorsValidationDataset()
+    raw_hwf_numbers_validation_dataset = RawHWFNumbersValidationDataset(raw_hwf_dataset_database)
+    raw_hwf_operators_validation_dataset = RawHWFOperatorsValidationDataset(raw_hwf_dataset_database)
     net1_valid_loader = TorchDataLoader(raw_hwf_numbers_validation_dataset, 32, shuffle = True)
     net2_valid_loader = TorchDataLoader(raw_hwf_operators_validation_dataset, 32, shuffle = True)
     net1 = TemperatureScalingNetwork(network1, "net1", net1_valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
