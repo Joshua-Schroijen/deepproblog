@@ -89,7 +89,7 @@ class RawHWFDatasetDatabase:
     operator_samples = []
     
     expressions = []
-    with open("expr_val.json", "r") as f:
+    with open(Path(__file__).parent / "expr_val.json", "r") as f:
       data = json.load(f)
       for d in data:
         expression = Expression(d)
