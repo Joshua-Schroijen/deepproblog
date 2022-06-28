@@ -3,7 +3,7 @@ from typing import Tuple
 
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.dataset import DataLoader
-from deepproblog.examples.MNIST.data import MNISTOperator, MNIST_train, MNIST_test
+from deepproblog.examples.MNIST.data import MNISTOperator, RawMNISTOperator, MNIST_train, MNIST_test
 from deepproblog.examples.MNIST.network import MNIST_Net
 from deepproblog.model import Model
 from deepproblog.network import Network
@@ -13,7 +13,7 @@ from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.dataset import NoiseMutatorDecorator, MutatingDataset
 from deepproblog.query import Query
-from deepproblog.utils import MutatingRawDataset
+from deepproblog.utils import split_dataset, MutatingRawDataset
 
 from problog.logic import Constant
 
@@ -40,17 +40,15 @@ def main(
     size = 1,
 	  seed = SHUFFLE_SEED
   )
-  noisy_dataset = MutatingDataset(dataset, NoiseMutatorDecorator(0.2, noise))
-
-  noisy_dataset_length = len(noisy_dataset)
-  noisy_dataset_train = noisy_dataset.subset(round(0.8 * noisy_dataset_length))
-  noisy_dataset_validation = noisy_dataset.subset(round(0.8 * noisy_dataset_length), noisy_dataset_length)
+  dataset_train, dataset_validation = split_dataset(dataset)
+  noisy_dataset_train = MutatingDataset(dataset_train, NoiseMutatorDecorator(0.2, noise))
   queries = DataLoader(noisy_dataset_train, 2)
+  noisy_dataset_validation = MutatingRawDataset(RawMNISTOperator(dataset_validation), noise_raw, 0.2)
 
   network = MNIST_Net()
   networks_evolution_collectors = {}
   if calibrate == True:
-    validation_loader = TorchDataLoader(MutatingRawDataset(noisy_dataset_validation, noise_raw, 0.2), 2)
+    validation_loader = TorchDataLoader(noisy_dataset_validation, 2)
     net = TemperatureScalingNetwork(network, "mnist_net", validation_loader, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
