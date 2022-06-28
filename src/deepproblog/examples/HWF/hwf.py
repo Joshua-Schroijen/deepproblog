@@ -46,14 +46,16 @@ def main(
 
   
   if curriculum:
-    dataset_filter = lambda x: x <= N 
+    dataset_filter = lambda x: x <= N
+    calibration_validation_dataset_filter = lambda x: x <= max(N, 3)
     dataset = HWFDataset("train2", dataset_filter)
-    val_dataset = HWFDataset("val", dataset_filter)
+    val_dataset = HWFDataset("val", calibration_validation_dataset_filter)
     test_dataset = HWFDataset("test", dataset_filter)
   else:
     dataset_filter = lambda x: x == N
+    calibration_validation_dataset_filter = lambda x: x == max(N, 3)
     dataset = HWFDataset("train2", dataset_filter)
-    val_dataset = HWFDataset("val", dataset_filter)
+    val_dataset = HWFDataset("val", calibration_validation_dataset_filter)
     test_dataset = HWFDataset("test", dataset_filter)
   loader = DataLoader(dataset, 32, shuffle = True)
 

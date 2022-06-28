@@ -345,7 +345,7 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         # Calculate NLL and ECE before temperature scaling
         before_temperature_nll = nll_criterion(logits, labels).item()
         before_temperature_ece = ece_criterion(logits, labels).item()
-        self.before_temperature_ece = before_temperature_ece
+        self._before_temperature_ece = before_temperature_ece
         print('Before temperature - NLL: %.3f, ECE: %.3f' % (before_temperature_nll, before_temperature_ece))
 
         # Next: optimize the temperature w.r.t. NLL
@@ -361,7 +361,7 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         # Calculate NLL and ECE after temperature scaling
         after_temperature_nll = nll_criterion(self.temperature_scale(logits), labels).item()
         after_temperature_ece = ece_criterion(self.temperature_scale(logits), labels).item()
-        self.after_temperature_ece = after_temperature_ece
+        self._after_temperature_ece = after_temperature_ece
         print('Optimal temperature: %.3f' % self.temperature.item())
         print('After temperature - NLL: %.3f, ECE: %.3f' % (after_temperature_nll, after_temperature_ece))
 
@@ -369,11 +369,11 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
 
     @property
     def before_temperature_ece(self):
-        return self.before_temperature_ece
+        return self._before_temperature_ece
 
     @property
     def after_temperature_ece(self):
-        return self.after_temperature_ece
+        return self._after_temperature_ece
 
 class _ECELoss(nn.Module):
     """
@@ -401,7 +401,8 @@ class _ECELoss(nn.Module):
     def forward(self, logits, labels):
         softmaxes = F.softmax(logits, dim = 1)
         confidences, predictions = torch.max(softmaxes, 1)
-        accuracies = predictions.eq(labels)
+        labels_ = torch.argmax(softmaxes, 1)
+        accuracies = predictions.eq(labels_)
 
         ece = torch.zeros(1, device = logits.device)
         for bin_lower, bin_upper in zip(self.bin_lowers, self.bin_uppers):

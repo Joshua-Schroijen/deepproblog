@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 import json
 from pathlib import Path
+from PIL import Image
 import sqlite3
 
 import torch
-from torchvision.io import read_image
 from torch.utils.data import Dataset
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 
 from deepproblog.examples.HWF.data import Expression
 
@@ -129,7 +130,11 @@ class RawHWFNumbersValidationDataset(RawHWFValidationDataset):
   def __getitem__(self, idx):
     img_path, label = self.dataset_db.get_numbers_sample(idx)
     img_path = str(Path(__file__).parent / "Handwritten_Math_Symbols" / img_path)
-    image = read_image(img_path)
+    image = Image.open(img_path)
+    transform = transforms.Compose(
+      [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+    )
+    image = transform(image)
     return image, self._encode_label(label)
 
   def _encode_label(self, number_label):
@@ -145,7 +150,11 @@ class RawHWFOperatorsValidationDataset(RawHWFValidationDataset):
   def __getitem__(self, idx):
     img_path, label = self.dataset_db.get_operators_sample(idx)
     img_path = str(Path(__file__).parent / "Handwritten_Math_Symbols" / img_path)
-    image = read_image(img_path)
+    image = Image.open(img_path)
+    transform = transforms.Compose(
+      [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+    )
+    image = transform(image)
     return image, self._encode_label(label)
 
   def _encode_label(self, operator_label):
