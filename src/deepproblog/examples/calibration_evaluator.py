@@ -8,10 +8,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import deepproblog.examples.MNIST.addition as addition
-import deepproblog.examples.MNIST.addition_mil as addition_mil
 import deepproblog.examples.MNIST.addition_noisy as addition_noisy
+import deepproblog.examples.HWF.hwf as hwf
 import deepproblog.examples.Coins.coins as coins
 import deepproblog.examples.Poker.poker as poker
+import deepproblog.examples.Forth.Add.add as forth_add
+import deepproblog.examples.Forth.Sort.sort as forth_sort
+import deepproblog.examples.Forth.WAP.wap as forth_wap
+import deepproblog.examples.CLUTRR.clutrr as clutrr
 
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 RESULTS_DIR = os.path.join(os.getcwd(), "calibration_evaluator_results")
@@ -51,73 +55,214 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
     json.dump(data_of_interest, f, indent = 6)
 
 def evaluate_MNIST_addition(logger):
-  os.chdir("./MNIST")
+  if not os.path.isdir("./MNIST"):
+    os.chdir("./MNIST")
 
   log_heading(logger, "Evaluating MNIST addition")
 
   log_subheading(logger, "Without calibration")
   [train, confusion_matrix] = addition.main(calibrate = False, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_1.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_addition_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_2.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_addition_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "With calibration after each train iteration")
-  [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_3.json", train, confusion_matrix)
+  [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_addition_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_MNIST_noisy(logger):
+  if not os.path.isdir("./MNIST"):
+    os.chdir("./MNIST")
+
+  log_heading(logger, "Evaluating MNIST noisy addition")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = addition_noisy.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = addition_noisy.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = addition_noisy.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_tt.jsonn", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
 
 def evaluate_coins(logger):
-  os.chdir("./Coins")
+  if not os.path.isdir("./Coins"):
+    os.chdir("./Coins")
 
   log_heading(logger, "Evaluating Coins")
 
   log_subheading(logger, "Without calibration")
   [train, confusion_matrix] = coins.main(calibrate = False, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_19.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_coins_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_20.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_coins_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "With calibration after each train iteration")
-  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_21.json", train, confusion_matrix)
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_coins_tt.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
 
 def evaluate_poker(logger):
-  os.chdir("./Poker")
+  if not os.path.isdir("./Poker"):
+    os.chdir("./Poker")
 
   log_heading(logger, "Evaluating Poker")
 
   log_subheading(logger, "Without calibration")
   [train, confusion_matrix] = poker.main(calibrate = False, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_16.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_poker_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_17.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_poker_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "With calibration after each train iteration")
-  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_experiment_18.json", train, confusion_matrix)
+  [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_poker_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_HWF(logger):
+  if not os.path.isdir("./HWF"):
+    os.chdir("./HWF")
+
+  log_heading(logger, "Evaluating HWF")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = hwf.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_hwf_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_hwf_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_hwf_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_Forth_Add(logger):
+  if not os.path.isdir("./Forth"):
+    os.chdir("./Forth")
+
+  log_heading(logger, "Evaluating Forth/Add")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = forth_add.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_add_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_add_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_forth_add_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_Forth_Sort(logger):
+  if not os.path.isdir("./Forth"):
+    os.chdir("./Forth")
+
+  log_heading(logger, "Evaluating Forth/Sort")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = forth_sort.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_sort_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_sort_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = True)
+  dump_data_of_interest("calibration_evaluation_forth_sort_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_Forth_WAP(logger):
+  if not os.path.isdir("./Forth"):
+    os.chdir("./Forth")
+
+  log_heading(logger, "Evaluating Forth/WAP")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = forth_wap.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_wap_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_wap.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_forth_wap_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  os.chdir("..")
+
+def evaluate_CLUTRR(logger):
+  if not os.path.isdir("./CLUTRR"):
+    os.chdir("./CLUTRR")
+
+  log_heading(logger, "Evaluating CLUTRR")
+
+  log_subheading(logger, "Without calibration")
+  [train, confusion_matrix] = clutrr.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_clutrr_ff.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = clutrr.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  dump_data_of_interest("calibration_evaluation_clutrr_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -127,20 +272,18 @@ def main(logfile="calibration_evaluation.txt"):
     os.mkdir(RESULTS_DIR)
   logging.config.fileConfig('calibration_evaluator_logging.ini')
   logger = logging.getLogger(__name__)
-
   initial_working_directory = os.getcwd()
+  os.chdir(RESULTS_DIR)
 
   evaluate_MNIST_addition(logger)
-
-  #log_heading(logger, "Evaluating MNIST noisy addition")
-  #log_heading(logger, "Evaluating Forth")
-  #log_heading(logger, "Evaluating HWF")
-  #log_heading(logger, "Evaluating CLUTRR")
-  #log_heading(logger, "Evaluating Poker")
-
+  evaluate_MNIST_noisy(logger)
   evaluate_coins(logger)
-
   evaluate_poker(logger)
+  evaluate_HWF(logger)
+  evaluate_Forth_Add(logger)
+  evaluate_Forth_Sort(logger)
+  evaluate_Forth_WAP(logger)
+  evaluate_CLUTRR(logger)
 
   os.chdir(initial_working_directory)
 
