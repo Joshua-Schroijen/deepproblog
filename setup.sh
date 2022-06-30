@@ -1,15 +1,7 @@
 #!/bin/bash
 
-sudo apt-get -y update
-if dpkg -l | grep -q gcc; then
-  sudo apt-get install -y gcc
-fi
-if dpkg -l | grep -q swi-prolog; then
-  sudo apt-get install -y swi-prolog
-fi
-if dpkg -l | grep -q libpython3-dev; then
-  sudo apt-get install -y libpython3-dev
-fi
+sudo apt-get -y update && sudo apt-get -y upgrade
+sudo apt-get install -y python3.10-venv gcc swi-prolog libpython3-dev
 python3 -m venv DevEnv
 source DevEnv/bin/activate
 pip3 install numpy matplotlib fire
