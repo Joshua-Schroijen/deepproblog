@@ -53,7 +53,7 @@ class RawCoinsValidationDataset(TorchDataset):
         labels = []
         line_no = 0
         coins_dataset_is_subset = isinstance(self.coins_dataset, Subset)
-        with open("{}/label_data/{}.csv".format(path, self.set_part)) as f:
+        with open("{}/label_data/{}.csv".format(path, self.coins_dataset.set_part)) as f:
             for line in f:
                 if coins_dataset_is_subset and not \
                    (line_no < self.coins_dataset.j and \
@@ -64,6 +64,8 @@ class RawCoinsValidationDataset(TorchDataset):
                     labels.append((c1, c2))
 
                 line_no += 1
+
+        return labels
 
     def __len__(self):
         return len(self.coins_dataset)
