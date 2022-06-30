@@ -55,8 +55,7 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
     json.dump(data_of_interest, f, indent = 6)
 
 def evaluate_MNIST_addition(logger):
-  if not os.path.isdir("./MNIST"):
-    os.chdir("./MNIST")
+  os.chdir("MNIST")
 
   log_heading(logger, "Evaluating MNIST addition")
 
@@ -80,8 +79,7 @@ def evaluate_MNIST_addition(logger):
   os.chdir("..")
 
 def evaluate_MNIST_noisy(logger):
-  if not os.path.isdir("./MNIST"):
-    os.chdir("./MNIST")
+  os.chdir("MNIST")
 
   log_heading(logger, "Evaluating MNIST noisy addition")
 
@@ -105,8 +103,7 @@ def evaluate_MNIST_noisy(logger):
   os.chdir("..")
 
 def evaluate_coins(logger):
-  if not os.path.isdir("./Coins"):
-    os.chdir("./Coins")
+  os.chdir("Coins")
 
   log_heading(logger, "Evaluating Coins")
 
@@ -130,8 +127,7 @@ def evaluate_coins(logger):
   os.chdir("..")
 
 def evaluate_poker(logger):
-  if not os.path.isdir("./Poker"):
-    os.chdir("./Poker")
+  os.chdir("Poker")
 
   log_heading(logger, "Evaluating Poker")
 
@@ -155,8 +151,7 @@ def evaluate_poker(logger):
   os.chdir("..")
 
 def evaluate_HWF(logger):
-  if not os.path.isdir("./HWF"):
-    os.chdir("./HWF")
+  os.chdir("HWF")
 
   log_heading(logger, "Evaluating HWF")
 
@@ -180,8 +175,7 @@ def evaluate_HWF(logger):
   os.chdir("..")
 
 def evaluate_Forth_Add(logger):
-  if not os.path.isdir("./Forth"):
-    os.chdir("./Forth")
+  os.chdir(os.path.join("Forth", "Add"))
 
   log_heading(logger, "Evaluating Forth/Add")
 
@@ -205,8 +199,7 @@ def evaluate_Forth_Add(logger):
   os.chdir("..")
 
 def evaluate_Forth_Sort(logger):
-  if not os.path.isdir("./Forth"):
-    os.chdir("./Forth")
+  os.chdir(os.path.join("Forth", "Sort"))
 
   log_heading(logger, "Evaluating Forth/Sort")
 
@@ -230,8 +223,7 @@ def evaluate_Forth_Sort(logger):
   os.chdir("..")
 
 def evaluate_Forth_WAP(logger):
-  if not os.path.isdir("./Forth"):
-    os.chdir("./Forth")
+  os.chdir(os.path.join("Forth", "WAP"))
 
   log_heading(logger, "Evaluating Forth/WAP")
 
@@ -249,8 +241,7 @@ def evaluate_Forth_WAP(logger):
   os.chdir("..")
 
 def evaluate_CLUTRR(logger):
-  if not os.path.isdir("./CLUTRR"):
-    os.chdir("./CLUTRR")
+  os.chdir("CLUTRR")
 
   log_heading(logger, "Evaluating CLUTRR")
 
@@ -273,7 +264,6 @@ def main(logfile="calibration_evaluation.txt"):
   logging.config.fileConfig('calibration_evaluator_logging.ini')
   logger = logging.getLogger(__name__)
   initial_working_directory = os.getcwd()
-  os.chdir(RESULTS_DIR)
 
   evaluate_MNIST_addition(logger)
   evaluate_MNIST_noisy(logger)
