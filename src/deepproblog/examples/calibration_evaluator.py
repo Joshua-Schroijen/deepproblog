@@ -275,15 +275,15 @@ def main(logfile="calibration_evaluation.txt"):
   initial_working_directory = os.getcwd()
   os.chdir(RESULTS_DIR)
 
-  evaluate_MNIST_addition(logger)
-  evaluate_MNIST_noisy(logger)
-  evaluate_coins(logger)
-  evaluate_poker(logger)
-  evaluate_HWF(logger)
+  # evaluate_MNIST_addition(logger)
+  # evaluate_MNIST_noisy(logger)
+  # evaluate_coins(logger)
+  # evaluate_poker(logger)
+  # evaluate_HWF(logger)
   evaluate_Forth_Add(logger)
   evaluate_Forth_Sort(logger)
   evaluate_Forth_WAP(logger)
-  evaluate_CLUTRR(logger)
+  # evaluate_CLUTRR(logger)
 
   os.chdir(initial_working_directory)
 
