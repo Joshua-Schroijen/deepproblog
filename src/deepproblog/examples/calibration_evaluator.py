@@ -7,16 +7,6 @@ import fire
 import numpy as np
 import matplotlib.pyplot as plt
 
-import deepproblog.examples.MNIST.addition as addition
-import deepproblog.examples.MNIST.addition_noisy as addition_noisy
-import deepproblog.examples.HWF.hwf as hwf
-import deepproblog.examples.Coins.coins as coins
-import deepproblog.examples.Poker.poker as poker
-import deepproblog.examples.Forth.Add.add as forth_add
-import deepproblog.examples.Forth.Sort.sort as forth_sort
-import deepproblog.examples.Forth.WAP.wap as forth_wap
-import deepproblog.examples.CLUTRR.clutrr as clutrr
-
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 RESULTS_DIR = os.path.join(os.getcwd(), "calibration_evaluator_results")
 
@@ -56,6 +46,7 @@ def dump_data_of_interest(filename, train_object, confusion_matrix):
 
 def evaluate_MNIST_addition(logger):
   os.chdir("MNIST")
+  import deepproblog.examples.MNIST.addition as addition
 
   log_heading(logger, "Evaluating MNIST addition")
 
@@ -80,6 +71,7 @@ def evaluate_MNIST_addition(logger):
 
 def evaluate_MNIST_noisy(logger):
   os.chdir("MNIST")
+  import deepproblog.examples.MNIST.addition_noisy as addition_noisy
 
   log_heading(logger, "Evaluating MNIST noisy addition")
 
@@ -104,6 +96,7 @@ def evaluate_MNIST_noisy(logger):
 
 def evaluate_coins(logger):
   os.chdir("Coins")
+  import deepproblog.examples.Coins.coins as coins
 
   log_heading(logger, "Evaluating Coins")
 
@@ -128,6 +121,7 @@ def evaluate_coins(logger):
 
 def evaluate_poker(logger):
   os.chdir("Poker")
+  import deepproblog.examples.Poker.poker as poker
 
   log_heading(logger, "Evaluating Poker")
 
@@ -152,6 +146,7 @@ def evaluate_poker(logger):
 
 def evaluate_HWF(logger):
   os.chdir("HWF")
+  import deepproblog.examples.HWF.hwf as hwf
 
   log_heading(logger, "Evaluating HWF")
 
@@ -176,6 +171,7 @@ def evaluate_HWF(logger):
 
 def evaluate_Forth_Add(logger):
   os.chdir(os.path.join("Forth", "Add"))
+  import deepproblog.examples.Forth.Add.add as forth_add
 
   log_heading(logger, "Evaluating Forth/Add")
 
@@ -200,6 +196,7 @@ def evaluate_Forth_Add(logger):
 
 def evaluate_Forth_Sort(logger):
   os.chdir(os.path.join("Forth", "Sort"))
+  import deepproblog.examples.Forth.Sort.sort as forth_sort
 
   log_heading(logger, "Evaluating Forth/Sort")
 
@@ -224,6 +221,7 @@ def evaluate_Forth_Sort(logger):
 
 def evaluate_Forth_WAP(logger):
   os.chdir(os.path.join("Forth", "WAP"))
+  import deepproblog.examples.Forth.WAP.wap as forth_wap
 
   log_heading(logger, "Evaluating Forth/WAP")
 
@@ -242,6 +240,7 @@ def evaluate_Forth_WAP(logger):
 
 def evaluate_CLUTRR(logger):
   os.chdir("CLUTRR")
+  import deepproblog.examples.CLUTRR.clutrr as clutrr
 
   log_heading(logger, "Evaluating CLUTRR")
 
