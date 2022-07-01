@@ -48,7 +48,7 @@ class DummyNet(nn.Module):
         return torch.tensor(output, requires_grad=True)
 
 
-class SmallNet(nn.Module):
+class SmallNet(ClassificationNetworkModule):
     def __init__(self, num_classes=1000, size=None):
         super(SmallNet, self).__init__()
         self.final = nn.Sigmoid() if num_classes == 1 else nn.Softmax(1)
@@ -86,6 +86,10 @@ class SmallNet(nn.Module):
         x = self.classifier(x)
         return x
 
+    def get_output_logits(self, input):
+        x = self.features(input)
+        x = x.view(-1, self.N)
+        return self.classifier[:-1](x)
 
 def smallnet(pretrained=False, model=None, **kwargs):
     if model is None:
