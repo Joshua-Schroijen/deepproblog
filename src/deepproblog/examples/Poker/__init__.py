@@ -10,7 +10,6 @@ from deepproblog.dataset import ImageDataset, Subset
 from deepproblog.query import Query
 from problog.logic import Term, Constant, list2term
 
-
 transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 )
@@ -18,9 +17,10 @@ transform = transforms.Compose(
 Card = List[str]
 Hand = Tuple[str, str]
 
-
 class PokerSeparate(ImageDataset):
     def __getitem__(self, i):
+        if isinstance(i, int):
+            i = (i // 4, i % 4)
         return super().__getitem__("{}_{}".format(*i))
 
     def __len__(self):
@@ -77,13 +77,11 @@ class PokerSeparate(ImageDataset):
         for c in count:
             print("\t", c, count[c] / len(self.data))
 
-
 values = ["jack", "queen", "king", "ace"]
 suits = ["hearts", "clubs", "diamonds", "spades"]
 types = ["high", "pair", "threeofakind", "straight", "flush"]
 subranks = {v: values.index(v) for v in values}
 subranks.update({"low": 0, "high": 1, None: 0})
-
 
 def is_flush(hand):
     suit = hand[0][1]
@@ -91,7 +89,6 @@ def is_flush(hand):
         if s != suit:
             return False
     return "flush", None
-
 
 def is_straight(hand):
     sorted_hand = sorted(hand, key=lambda x: values.index(x[0]))
@@ -102,14 +99,12 @@ def is_straight(hand):
         return "straight", "high"
     return False
 
-
 def three_of_a_kind(hand):
     value = hand[0][0]
     for v, _ in hand:
         if v != value:
             return False
     return "threeofakind", value
-
 
 def two_of_a_kind(hand):
     sorted_hand = sorted(hand, key=lambda x: values.index(x[0]))
@@ -119,12 +114,10 @@ def two_of_a_kind(hand):
         return "pair", value
     return False
 
-
 def high_card(hand):
     sorted_hand = sorted(hand, key=lambda x: values.index(x[0]))
     sorted_hand = list(x[0] for x in sorted_hand)
     return "high", sorted_hand[-1]
-
 
 def best_hand(hand, with_suits):
     if with_suits:
@@ -143,7 +136,6 @@ def best_hand(hand, with_suits):
             return result
     return None
 
-
 def get_outcome(t1, t2):
     i1, i2 = types.index(t1[0]), types.index(t2[0])
     if i1 > i2:
@@ -157,13 +149,11 @@ def get_outcome(t1, t2):
         return "loss"
     return "draw"
 
-
 def hand_to_term(hand):
     if hand[1] is None:
         return Term(hand[0])
     else:
         return Term(hand[0], Term(hand[1]))
-
 
 def get_probabilities(c1, c2, use_suits, p):
     outcomes = {"win": 0.0, "loss": 0.0, "draw": 0.0}
@@ -184,17 +174,19 @@ class RawPokerNet1ValidationDataset(TorchDataset):
         labels = []
         line_no = 0
         poker_dataset_is_subset = isinstance(self.poker_dataset, Subset)
-        with open("data/labels/{}.csv".format(self.poker_dataset.dataset)) as f:
+        with open("data/labels/{}.csv".format(self.poker_dataset.dataset.dataset if poker_dataset_is_subset else self.poker_dataset.dataset)) as f:
             for line in f:
                 if poker_dataset_is_subset and not \
                    (line_no < self.poker_dataset.j and \
                     line_no >= self.poker_dataset.i):
+                    line_no += 1
                     continue
                 else:
                     cards = [c.split(" of ")[0] for c in line.strip().split(",")]
                     labels.extend(cards)
+                    line_no += 1
 
-                line_no += 1
+        return labels
 
     def _encode_card_label(self, card_label):
         card_number = (0 if card_label == "jack" else (
@@ -207,5 +199,4 @@ class RawPokerNet1ValidationDataset(TorchDataset):
         return len(self.poker_dataset)
 
     def __getitem__(self, idx):
-        image_idx = (idx // 4, idx % 4)
-        return self.poker_dataset[image_idx], self._encode_card_label(self.labels[idx])
+        return self.poker_dataset[idx], self._encode_card_label(self.labels[idx])
