@@ -66,7 +66,7 @@ def main(
   networks_evolution_collectors = {}
   if calibrate == True:
     raw_hwf_dataset_database = RawHWFDatasetDatabase()
-    raw_hwf_dataset_database.initialize(dataset_filter)
+    raw_hwf_dataset_database.initialize(calibration_validation_dataset_filter)
     raw_hwf_numbers_validation_dataset = RawHWFNumbersValidationDataset(raw_hwf_dataset_database)
     raw_hwf_operators_validation_dataset = RawHWFOperatorsValidationDataset(raw_hwf_dataset_database)
     net1_valid_loader = TorchDataLoader(raw_hwf_numbers_validation_dataset, 32, shuffle = True)
