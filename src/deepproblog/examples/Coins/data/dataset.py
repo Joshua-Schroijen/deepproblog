@@ -58,19 +58,19 @@ class RawCoinsValidationDataset(TorchDataset):
                 if coins_dataset_is_subset and not \
                    (line_no < self.coins_dataset.j and \
                     line_no >= self.coins_dataset.i):
+                    line_no += 1
                     continue
                 else:
                     c1, c2 = [l.strip() for l in line.split(",")]
                     labels.append((c1, c2))
-
-                line_no += 1
+                    line_no += 1
 
         return labels
 
     def __len__(self):
         return len(self.coins_dataset)
 
-    def _encode_coin_label(coin_label):
+    def _encode_coin_label(self, coin_label):
         return F.one_hot(torch.tensor((0 if coin_label == "heads" else 1)), num_classes = 2).type(torch.FloatTensor)
 
 class RawCoinsNet1ValidationDataset(RawCoinsValidationDataset):
