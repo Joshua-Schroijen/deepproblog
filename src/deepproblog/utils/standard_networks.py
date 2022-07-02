@@ -82,14 +82,22 @@ class SmallNet(ClassificationNetworkModule):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(-1, self.N)
+        x = x.view(-1, self.N) 
         x = self.classifier(x)
         return x
 
     def get_output_logits(self, input):
-        x = self.features(input)
-        x = x.view(-1, self.N)
-        return self.classifier[:-1](x)
+        logits = torch.empty(0, self.num_classes)
+
+        is0 = input.size(0)
+        for i, j in zip(range(0, is0), range(1, is0 + 1)):
+            x = self.features(input[i:j])
+            x = x.view(-1, self.N)
+            x = self.classifier[:-1](x)
+            x = x[0:1]
+            logits = torch.cat((logits, x), dim = 0)
+
+        return logits
 
 def smallnet(pretrained=False, model=None, **kwargs):
     if model is None:
