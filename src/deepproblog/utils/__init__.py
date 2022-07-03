@@ -11,10 +11,12 @@ from time import strftime
 from typing import Union, Any, Dict, List
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset as TorchDataset, Subset as TorchSubset
 
 import problog
 from problog.logic import Term
+
+from ..dataset import Dataset
 
 parser = problog.parser.PrologParser(problog.program.ExtendedPrologFactory())
 
@@ -22,23 +24,19 @@ cred = "\033[91m"
 cend = "\033[0m"
 cgreen = "\033[92m"
 
-
 def log_exists(location: Union[str, os.PathLike], name: str):
     return Path(location).glob(name + "*")
-
 
 def check_path(path: Union[str, os.PathLike]):
     path_dir = os.path.dirname(str(path))
     if not os.path.exists(path_dir):
         os.makedirs(path_dir)
 
-
 def get_top_path(pattern: str, reverse=True):
     paths = sorted(Path(".").glob(pattern), reverse=reverse)
     if len(paths) > 0:
         return paths[0]
     return None
-
 
 def split(text: str, splitchar: str, lb="(", rb=")"):
     depth = 0
@@ -54,15 +52,12 @@ def split(text: str, splitchar: str, lb="(", rb=")"):
         splits[-1] += c
     return splits
 
-
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
 
 def nth(iterable, n, default=None):
     """Returns the nth item or a default value"""
     return next(islice(iterable, n, None), default)
-
 
 def get_configuration(parameters: dict, i: int) -> dict:
     config = dict()
@@ -72,12 +67,10 @@ def get_configuration(parameters: dict, i: int) -> dict:
         config[k] = parameters[k][j]
     return config
 
-
 def parse(string: str) -> Term:
     parsed = parser.parseString(string)
     for term in parsed:
         return term
-
 
 class Table(object):
     class Dimension(object):
@@ -147,7 +140,6 @@ class Table(object):
         data = [[self.aggregate(d) for d in row] for row in data]
         return TabularFormatter.format(data, x_cats, y_cats)
 
-
 class TabularFormatter(object):
     @staticmethod
     def format(data, x=None, y=None):
@@ -176,19 +168,15 @@ class TabularFormatter(object):
         ]
         return "\n".join(padded_rows)
 
-
 def format_time():
     return strftime("_%y%m%d_%H%M")
-
 
 def format_time_precise():
     return datetime.utcnow().strftime("%y%m%d_%H%M%S%f")
 
-
 class NoConfigException(Exception):
     def __str__(self):
         return "No config file specified as an argument."
-
 
 def load_config(filename: str = None):
     """
@@ -205,7 +193,6 @@ def load_config(filename: str = None):
     except IndexError:
         raise NoConfigException()
 
-
 def term2list2(term: Term):
     result = []
     while (
@@ -216,7 +203,6 @@ def term2list2(term: Term):
     if not term == problog.logic.Term("[]"):
         raise ValueError("Expected fixed list.")
     return result
-
 
 def config_to_string(configuration: Dict[str, Any]) -> str:
     return "_".join(
@@ -236,7 +222,7 @@ def bytes_to_tensor(blob):
   buffer.seek(0)
   return torch.load(buffer)
 
-class MutatingRawDataset(Dataset):
+class MutatingRawDataset(TorchDataset):
   def __init__(self, inner_raw_dataset, mutator, p, seed = None):
     super(Dataset, self).__init__()
     self.inner_raw_dataset = inner_raw_dataset
@@ -260,6 +246,14 @@ def split_dataset(dataset: Dataset, split_ratio: float = 0.8):
   dataset_length = len(dataset)
   dataset_part_1 = dataset.subset(round(split_ratio * dataset_length))
   dataset_part_2 = dataset.subset(round(split_ratio * dataset_length), dataset_length)
+  return [dataset_part_1, dataset_part_2]
+
+def split_torch_dataset(dataset: TorchDataset, split_ratio: float = 0.8):
+  dataset_length = len(dataset)
+  part_1_indices = range(round(split_ratio * dataset_length))
+  part_2_indices = range(round(split_ratio * dataset_length), dataset_length)
+  dataset_part_1 = TorchSubset(dataset, part_1_indices)
+  dataset_part_2 = TorchSubset(dataset, part_2_indices)
   return [dataset_part_1, dataset_part_2]
 
 def load_list(the_list: List[Any], batch_size: int):
