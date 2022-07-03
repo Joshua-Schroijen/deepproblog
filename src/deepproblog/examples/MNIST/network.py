@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+from deepproblog.network import ClassificationNetworkModule
 
 class MNIST_CNN(nn.Module):
     def __init__(self):
@@ -18,7 +19,6 @@ class MNIST_CNN(nn.Module):
         x = self.encoder(x)
         x = x.view(-1, 16 * 4 * 4)
         return x
-
 
 class MNIST_Classifier(nn.Module):
     def __init__(self, N=10, with_softmax=True):
@@ -40,8 +40,7 @@ class MNIST_Classifier(nn.Module):
             x = self.softmax(x)
         return x.squeeze(0)
 
-
-class MNIST_Net(nn.Module):
+class MNIST_Net(ClassificationNetworkModule):
     def __init__(self, N=10, with_softmax=True, size=16 * 4 * 4):
         super(MNIST_Net, self).__init__()
         self.with_softmax = with_softmax
@@ -74,4 +73,10 @@ class MNIST_Net(nn.Module):
         x = self.classifier(x)
         if self.with_softmax:
             x = self.softmax(x)
+        return x
+
+    def get_output_logits(self, input):
+        x = self.encoder(input)
+        x = x.view(-1, self.size)
+        x = self.classifier(x)
         return x

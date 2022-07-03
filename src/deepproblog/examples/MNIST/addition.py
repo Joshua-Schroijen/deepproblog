@@ -12,7 +12,7 @@ from deepproblog.examples.MNIST.data import (
     MNIST_train,
     MNIST_test,
     addition,
-    RawMNISTOperator
+    RawMNISTValidationDataset
 )
 from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
@@ -47,12 +47,9 @@ def main(
   test_set = addition(configuration["N"], "test")
 
   batch_size = 2
+  loader = DataLoader(train_set, batch_size, False)
   if calibrate == True:
-    rest_train_set, validation_set = split_dataset(train_set)
-    loader = DataLoader(rest_train_set, batch_size, False)
-    validation_loader_for_calibration = TorchDataLoader(RawMNISTOperator(validation_set), batch_size)
-  else:
-    loader = DataLoader(train_set, batch_size, False)
+    validation_loader_for_calibration = TorchDataLoader(RawMNISTValidationDataset(), batch_size)
 
   network = MNIST_Net()
 
@@ -100,4 +97,4 @@ def main(
   return [train, get_confusion_matrix(model, test_set, verbose = 0)]
 
 if __name__ == "__main__":
-  fire.Fire(main())
+  fire.Fire(main)
