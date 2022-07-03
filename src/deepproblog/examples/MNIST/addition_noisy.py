@@ -3,7 +3,7 @@ from typing import Tuple
 
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.dataset import DataLoader
-from deepproblog.examples.MNIST.data import MNISTOperator, RawMNISTOperator, MNIST_train, MNIST_test
+from deepproblog.examples.MNIST.data import MNISTOperator, RawMNISTValidationDataset, MNIST_train, MNIST_test
 from deepproblog.examples.MNIST.network import MNIST_Net
 from deepproblog.model import Model
 from deepproblog.network import Network
@@ -26,8 +26,8 @@ def noise(_, query: Query):
   new_query = query.replace_output([Constant(randint(0, 18))])
   return new_query
 
-def noise_raw(_, item: Tuple[torch.Tensor, torch.Tensor, int]):
-  return (item[0], item[1], randint(0, 18))
+def noise_raw(_, item: Tuple[torch.Tensor, int]):
+  return (item[0], randint(0, 18))
 
 def main(
   calibrate = False,
@@ -40,10 +40,9 @@ def main(
     size = 1,
 	  seed = SHUFFLE_SEED
   )
-  dataset_train, dataset_validation = split_dataset(dataset)
-  noisy_dataset_train = MutatingDataset(dataset_train, NoiseMutatorDecorator(0.2, noise))
+  noisy_dataset_train = MutatingDataset(dataset, NoiseMutatorDecorator(0.2, noise))
   queries = DataLoader(noisy_dataset_train, 2)
-  noisy_dataset_validation = MutatingRawDataset(RawMNISTOperator(dataset_validation), noise_raw, 0.2)
+  noisy_dataset_validation = MutatingRawDataset(RawMNISTValidationDataset(), noise_raw, 0.2)
 
   network = MNIST_Net()
   networks_evolution_collectors = {}
