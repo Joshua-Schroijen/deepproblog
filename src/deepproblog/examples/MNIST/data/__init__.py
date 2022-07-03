@@ -3,16 +3,18 @@ import json
 import random
 from pathlib import Path
 import torch
+
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn.functional as F
 from torch.utils.data import Dataset as TorchDataset
 from typing import Callable, List, Iterable, Tuple
 
+from problog.logic import Term, list2term, Constant
 
 from deepproblog.dataset import Dataset
 from deepproblog.query import Query
-from problog.logic import Term, list2term, Constant
+from deepproblog.utils import split_torch_dataset
 
 _DATA_ROOT = Path(__file__).parent
 
@@ -20,15 +22,16 @@ transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
 )
 
-datasets = {
-    "train": torchvision.datasets.MNIST(
-        root=str(_DATA_ROOT), train=True, download=True, transform=transform
-    ),
+train_dataset, validation_dataset = split_torch_dataset(torchvision.datasets.MNIST(
+    root=str(_DATA_ROOT), train=True, download=True, transform=transform
+))
+datasets = {    
+    "train": train_dataset,
+    "validation": validation_dataset,
     "test": torchvision.datasets.MNIST(
         root=str(_DATA_ROOT), train=False, download=True, transform=transform
     ),
 }
-
 
 def digits_to_number(digits: Iterable[int]) -> int:
     number = 0
@@ -37,7 +40,6 @@ def digits_to_number(digits: Iterable[int]) -> int:
         number += d
     return number
 
-
 class MNIST_Images(object):
     def __init__(self, subset):
         self.subset = subset
@@ -45,10 +47,9 @@ class MNIST_Images(object):
     def __getitem__(self, item):
         return datasets[self.subset][int(item[0])][0]
 
-
 MNIST_train = MNIST_Images("train")
+MNIST_validation = MNIST_Images("validation")
 MNIST_test = MNIST_Images("test")
-
 
 class MNIST(Dataset):
     def __len__(self):
@@ -65,7 +66,6 @@ class MNIST(Dataset):
         self.dataset = dataset
         self.data = datasets[dataset]
 
-
 def addition(n: int, dataset: str, seed=None):
     """Returns a dataset for binary addition"""
     return MNISTOperator(
@@ -76,7 +76,6 @@ def addition(n: int, dataset: str, seed=None):
         arity=2,
         seed=seed,
     )
-
 
 class MNISTOperator(Dataset, TorchDataset):
     def __getitem__(self, index: int) -> Tuple[list, list, int]:
@@ -203,16 +202,12 @@ class MNISTOperator(Dataset, TorchDataset):
     def __len__(self):
         return len(self.data)
 
-class RawMNISTOperator(TorchDataset):
-    def __init__(self, MNIST_operator: MNISTOperator):
-        self.MNIST_operator = MNIST_operator
-
+class RawMNISTValidationDataset(TorchDataset):
     def __getitem__(self, idx: int):
-        l1, l2, label = self.MNIST_operator[idx]
-        return (l1, l2, self._encode_label(label))
+        return datasets["validation"][idx][0], self._encode_label(datasets["validation"][idx][1])
 
     def __len__(self):
-        return len(self.MNIST_operator)
+        return len(datasets["validation"])
 
     def _encode_label(self, label):
         return F.one_hot(torch.tensor(label), num_classes = 10).type(torch.FloatTensor)
