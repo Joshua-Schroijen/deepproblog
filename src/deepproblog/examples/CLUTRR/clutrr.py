@@ -1,9 +1,8 @@
 import fire
 from torch.utils.data import DataLoader as TorchDataLoader
-import sys
 from json import dumps
 
-from deepproblog.engines import ApproximateEngine, ExactEngine
+from deepproblog.engines import ApproximateEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
@@ -20,7 +19,6 @@ from deepproblog.utils.stop_condition import Threshold, StopOnPlateau
 def main(
   i = 0,
   calibrate = False,
-  calibrate_after_each_train_iteration = False,
   logging = False
 ):
   dsets = ["sys_gen_{}".format(i) for i in range(3)] + ["noise_{}".format(i) for i in range(4)]
@@ -41,8 +39,8 @@ def main(
     "gender_net": RawCLUTRRGenderNetValidationDataset()
   }
   loader = DataLoader(train_dataset, 4)
-  rel_net_val_loader = DataLoader(raw_datasets["rel_extract"], 4)
-  gender_net_val_loader = DataLoader(raw_datasets["gender_net"], 4)
+  rel_net_val_loader = TorchDataLoader(raw_datasets["rel_extract"], 4)
+  gender_net_val_loader = TorchDataLoader(raw_datasets["gender_net"], 4)
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)
