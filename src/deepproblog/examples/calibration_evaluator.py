@@ -39,7 +39,7 @@ def plot_loss_curve(loss_history, name, title):
 def dump_data_of_interest(filename, train_object, confusion_matrix):
   data_of_interest = {
     "loss_history": train_object.loss_history,
-	"accuracy": confusion_matrix.accuracy()
+	  "accuracy": confusion_matrix.accuracy()
   }
   with open(os.path.join(RESULTS_DIR, filename), "w") as f:
     json.dump(data_of_interest, f, indent = 6)
