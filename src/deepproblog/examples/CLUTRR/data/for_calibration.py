@@ -87,10 +87,10 @@ class RawCLUTRRDatasetDatabase:
       done = False
       while not done:
         try:
-          sample_genders_dict = ast.literal_eval(next(gender_net_file))
+          sample_genders_dict = ast.literal_eval(next(gender_net_file).decode('ascii'))
           sample_network_inputs = term2list2(
             parse(
-              next(gender_net_file) + "."
+              next(gender_net_file).decode('ascii') + "."
             )
           )
           sentences = str(sample_network_inputs[0])
@@ -102,32 +102,37 @@ class RawCLUTRRDatasetDatabase:
     return gender_net_samples
 
   def _get_rel_extract_samples(self):
+    convert = lambda x: x.decode('ascii').strip()
+
     rel_extract_samples = []
-    sample_locations = []
+    sample_locations = [(0, -1)]
     with open(Path(__file__).parent / "rel_extract_calibration_validation.txt", "rb") as rel_extract_file:
       offset = 0
       no_lines = 0
-      prev_line_begins_with_brace = False
+      prev_line_begins_with_brace = True
       for line in rel_extract_file:
+        line = convert(line)
         if line[0] == '{' and \
            not prev_line_begins_with_brace:
+          sample_locations[-1] = (sample_locations[-1][0], no_lines) 
+          sample_locations.append((offset, -1))
           no_lines = 0
-          sample_locations.append((offset, no_lines))
         if line[0] == '{':
           prev_line_begins_with_brace = True
         else:
           prev_line_begins_with_brace = False
         offset += len(line)
         no_lines += 1
+      sample_locations[-1] = (sample_locations[-1][0], no_lines)
       rel_extract_file.seek(0)
       for sample_id, sample_location in enumerate(sample_locations):
         sample_offset, sample_lines = sample_location
         rel_extract_file.seek(sample_offset)
-        sample_relations_dict = ast.literal_eval(next(rel_extract_file))
-        sample_genders_dict = ast.literal_eval(next(rel_extract_file))
+        sample_relations_dict = ast.literal_eval(convert(next(rel_extract_file)))
+        next(rel_extract_file)
         self._extend_relations_dict(sample_relations_dict)
         for _ in range(sample_lines - 2):
-          sentence, entity_1, entity_2 = next(rel_extract_file).split(",")
+          sentence, entity_1, entity_2 = convert(next(rel_extract_file)).split(",")
           entity_1 = int(entity_1)
           entity_2 = int(entity_2)
           relation = sample_relations_dict[(entity_1, entity_2)]
@@ -209,7 +214,7 @@ class RawCLUTRRValidationDataset(TorchDataset, ABC):
     self
   ):
     super(TorchDataset, self).__init__()
-    self.dataset_db =  RawCLUTRRDatasetDatabase()
+    self.dataset_db = RawCLUTRRDatasetDatabase()
     self.dataset_db.initialize()
 
   @abstractmethod
