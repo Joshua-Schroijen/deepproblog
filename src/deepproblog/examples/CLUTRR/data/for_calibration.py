@@ -23,7 +23,7 @@ class RawCLUTRRDatasetDatabase:
         for sample in self._get_rel_extract_samples():
           sample_id, sentence, entity_1, entity_2, relation = sample
           self.cursor.execute("SELECT * FROM CLUTRR_rel_extract_raw_data WHERE sample_id = ? AND sentence = ? AND entity_1 = ? AND entity_2 = ?;", [sample_id, sentence, entity_1, entity_2])
-          if self.cursor.fetchone() == []:
+          if not self.cursor.fetchone():
             self.cursor.execute("INSERT INTO CLUTRR_rel_extract_raw_data VALUES (:sample_id, :sentence, :entity_1, :entity_2)", {'sample_id': sample_id, 'sentence': sentence, 'entity_1': entity_1, 'entity_2': entity_2, 'embedding_part_1': zeros_embedding, 'embedding_part_2': zeros_embedding, 'relation': relation})
         for sample in self._get_gender_net_samples():
           sentences, entity, gender = sample
@@ -82,21 +82,23 @@ class RawCLUTRRDatasetDatabase:
             CLUTRR_gender_net_raw_data_table_exists)
 
   def _get_gender_net_samples(self):
+    convert = lambda x: x.strip()
+
     gender_net_samples = []
     with open(Path(__file__).parent / "gender_net_calibration_validation.txt", "r") as gender_net_file:
       done = False
       while not done:
         try:
-          sample_genders_dict = ast.literal_eval(next(gender_net_file).decode('ascii'))
+          sample_genders_dict = ast.literal_eval(convert(next(gender_net_file)))
           sample_network_inputs = term2list2(
             parse(
-              next(gender_net_file).decode('ascii') + "."
+              convert(next(gender_net_file)) + "."
             )
           )
-          sentences = str(sample_network_inputs[0])
-          entity = int(sample_network_inputs[1])
+          sentences = str(list2term(sample_network_inputs[:-1]))
+          entity = int(sample_network_inputs[-1])
           gender = sample_genders_dict[entity]
-          gender_net_samples.append[(sentences, entity, gender)]
+          gender_net_samples.appen((sentences, entity, gender))
         except StopIteration:
           done = True
     return gender_net_samples
@@ -111,6 +113,7 @@ class RawCLUTRRDatasetDatabase:
       no_lines = 0
       prev_line_begins_with_brace = True
       for line in rel_extract_file:
+        line_length = len(line)
         line = convert(line)
         if line[0] == '{' and \
            not prev_line_begins_with_brace:
@@ -121,7 +124,7 @@ class RawCLUTRRDatasetDatabase:
           prev_line_begins_with_brace = True
         else:
           prev_line_begins_with_brace = False
-        offset += len(line)
+        offset += line_length
         no_lines += 1
       sample_locations[-1] = (sample_locations[-1][0], no_lines)
       rel_extract_file.seek(0)
