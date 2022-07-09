@@ -77,9 +77,10 @@ class Solver(object):
         self.engine.tensor_store.clear()
         # Build ACs
         acs = []
-        globals.record_networks = True
         for q in batch:
-            if str(q) in globals.query_story_mapping:
+            query_in_mapping = (str(q) in globals.query_story_mapping)
+            globals.record_networks = query_in_mapping
+            if query_in_mapping:
                 with open("rel_extract_calibration_validation.txt", "a") as f:
                     f.write(f"{globals.query_story_mapping[str(q)].get_relations()}\n")
                     f.write(f"{globals.query_story_mapping[str(q)].get_genders()}\n")
@@ -88,7 +89,7 @@ class Solver(object):
             acs.append(
                 self.cache.get(q)
             )
-        globals.record_networks = False
+            globals.record_networks = False
 
         # Evaluate ACs. Evaluate networks if necessary
         result = []

@@ -23,7 +23,7 @@ class RawCLUTRRDatasetDatabase:
         for sample in self._get_rel_extract_samples():
           sample_id, sentence, entity_1, entity_2, relation = sample
           self.cursor.execute("SELECT * FROM CLUTRR_rel_extract_raw_data WHERE sample_id = ? AND sentence = ? AND entity_1 = ? AND entity_2 = ?;", [sample_id, sentence, entity_1, entity_2])
-          if self.cursor.fetchone() == []:
+          if not self.cursor.fetchone():
             self.cursor.execute("INSERT INTO CLUTRR_rel_extract_raw_data VALUES (:sample_id, :sentence, :entity_1, :entity_2)", {'sample_id': sample_id, 'sentence': sentence, 'entity_1': entity_1, 'entity_2': entity_2, 'embedding_part_1': zeros_embedding, 'embedding_part_2': zeros_embedding, 'relation': relation})
         for sample in self._get_gender_net_samples():
           sentences, entity, gender = sample
