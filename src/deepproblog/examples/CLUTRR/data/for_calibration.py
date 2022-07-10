@@ -294,4 +294,11 @@ class RawCLUTRRRelExtractValidationDataset(RawCLUTRRValidationDataset):
     self.dataset_db.update_embeddings_rel_extract(encoder)
 
 def rel_extract_dataloader_collate_fn(batch):
-  return batch
+  inputs = []
+  labels = []
+  for e in batch:
+    sample, entity_1, entity_2, embedding_part_1, embedding_part_2 = e[0]
+    inputs.append((sample, entity_1, entity_2, embedding_part_1, embedding_part_2))
+    labels.append(e[1])
+
+  return (inputs, labels)
