@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from problog.logic import term2list
-
+from deepproblog.network import ClassificationNetworkModule
 
 def tokenize2(text, entities, vocab):
     text = text.strip('"').split(" ")
@@ -25,7 +25,6 @@ def tokenize2(text, entities, vocab):
             except KeyError:
                 tokenized.append(vocab["OOV"])
     return tokenized
-
 
 def tokenize(text, entity, vocab):
     text = text.strip('"').split(" ")
@@ -49,7 +48,6 @@ def tokenize(text, entity, vocab):
                 tokenized.append(vocab["OOV"])
     return tokenized, indices
 
-
 def tokenize_cloze(text, entities, vocab, nr_entities=10):
     text = text.strip('"').split(" ")
     entity_tokens = ["ENT{}".format(x) for x in range(nr_entities)]
@@ -68,7 +66,6 @@ def tokenize_cloze(text, entities, vocab, nr_entities=10):
             except KeyError:
                 tokenized.append(vocab["OOV"])
     return tokenized, indices
-
 
 class Encoder(nn.Module):
     def __init__(self, vocab, hidden_size, embed_size=None, p_drop=0.0, weights=None):
@@ -115,8 +112,7 @@ class Encoder(nn.Module):
                 out.append(None)
         return out
 
-
-class RelNet(nn.Module):
+class RelNet(ClassificationNetworkModule):
     def __init__(self, in_size, mid_size, out_size=11, activation=True):
         super(RelNet, self).__init__()
         self.in_size = in_size
@@ -130,11 +126,24 @@ class RelNet(nn.Module):
 
     def forward(self, ex, ey):
         x = torch.cat([ex, ey], 0)
+        breakpoint()
         x = self.embed(x.unsqueeze(0))
         if self.activation:
             x = self.activation_layer(x)
         return x[0]
 
+    def get_output_logits(self, input):
+        exs = input[3]
+        eys = input[4]
+
+        logits = torch.empty(0, self.out_size)
+        for ex, ey in zip(exs, eys):
+            x = torch.cat([ex, ey], 0)
+            x = self.embed(x.unsqueeze(0))
+            logits = torch.cat((logits, x), dim = 0)
+
+        return logits
+torch.Size([1, 8192])
 
 class GenderNet(nn.Module):
     def __init__(self, vocab, hidden_size, embed_size=None):

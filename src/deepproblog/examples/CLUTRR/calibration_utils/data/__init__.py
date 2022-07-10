@@ -293,7 +293,9 @@ class CLUTRR_Dataset(Dataset):
         if not self.gender:
             story.remove_gender()
         query = story.to_query(self.type)
-        globals.query_story_mapping[str(query)] = story
+        story_copy = Story(copy = story)
+        story_copy.remove_gender()
+        globals.query_story_mapping[str(query)] = story_copy
         return query
 
     def __len__(self):
