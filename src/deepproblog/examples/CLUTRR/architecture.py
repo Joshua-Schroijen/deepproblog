@@ -174,7 +174,6 @@ class GenderNet(nn.Module):
         x = x[:, -1, :]
         x = self.classification(x)
         return x[0]
-problog.logic.ArithmeticError: Unknown function '2 is the father of 1'/0.
 
     def get_output_logits(self, inputs):
         logits = torch.empty(0, 2)
