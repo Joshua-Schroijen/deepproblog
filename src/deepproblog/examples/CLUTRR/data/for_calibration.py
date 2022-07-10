@@ -5,7 +5,7 @@ import sqlite3
 
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset as TorchDataset
+from torch.utils.data import Dataset as TorchDataset, default_collate
 
 from problog.logic import list2term, Term, Constant
 
@@ -19,7 +19,7 @@ class RawCLUTRRDatasetDatabase:
       self.cursor.execute("CREATE TABLE CLUTRR_rel_extract_raw_data ( sample_id integer, sentence text, entity_1 integer, entity_2 integer, embedding_part_1 blob, embedding_part_2 blob, relation text )")
       self.cursor.execute("CREATE TABLE CLUTRR_gender_net_raw_data ( sentences text, entity integer, gender integer )")
       with self.connection:
-        zeros_embedding = tensor_to_bytes(torch.zeros(4096))
+        zeros_embedding = tensor_to_bytes(torch.zeros(32))
         for sample in self._get_rel_extract_samples():
           sample_id, sentence, entity_1, entity_2, relation = sample
           self.cursor.execute("SELECT * FROM CLUTRR_rel_extract_raw_data WHERE sample_id = ? AND sentence = ? AND entity_1 = ? AND entity_2 = ?;", [sample_id, sentence, entity_1, entity_2])
@@ -236,7 +236,7 @@ class RawCLUTRRGenderNetValidationDataset(RawCLUTRRValidationDataset):
     sentences, entity, gender = self.dataset_db.get_gender_net_sample(idx)
     sentences = term2list2(
       parse(
-        next(sentences) + "."
+        sentences + "."
       )
     )
     for i, sentence in enumerate(sentences):
@@ -248,7 +248,7 @@ class RawCLUTRRGenderNetValidationDataset(RawCLUTRRValidationDataset):
   def __len__(self):
     return self.dataset_db.get_length_gender_net()
 
-  def _encode_gender_label(gender_label):
+  def _encode_gender_label(self, gender_label):
     return F.one_hot(torch.tensor((0 if gender_label == "male" else 1)), num_classes = 2).type(torch.FloatTensor)
 
 class RawCLUTRRRelExtractValidationDataset(RawCLUTRRValidationDataset):
@@ -263,7 +263,7 @@ class RawCLUTRRRelExtractValidationDataset(RawCLUTRRValidationDataset):
   def __len__(self):
     return self.dataset_db.get_length_rel_extract()
 
-  def _encode_relation_label(relation_label):
+  def _encode_relation_label(self, relation_label):
     relation_number = (
       0 if relation_label == "child" else (
         1 if relation_label == "child_in_law" else (
@@ -292,3 +292,6 @@ class RawCLUTRRRelExtractValidationDataset(RawCLUTRRValidationDataset):
 
   def update_embeddings(self, encoder):
     self.dataset_db.update_embeddings_rel_extract(encoder)
+
+def rel_extract_dataloader_collate_fn(batch):
+  return batch
