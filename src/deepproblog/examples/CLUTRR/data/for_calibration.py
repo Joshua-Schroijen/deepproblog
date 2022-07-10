@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 import ast
 from pathlib import Path
+from random import sample
 import sqlite3
 
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset as TorchDataset, default_collate
 
-from problog.logic import list2term, Term, Constant
+from problog.logic import Constant, list2term, Term
 
 from deepproblog.utils import bytes_to_tensor, tensor_to_bytes, parse, term2list2
 
@@ -240,7 +241,7 @@ class RawCLUTRRGenderNetValidationDataset(RawCLUTRRValidationDataset):
       )
     )
     for i, sentence in enumerate(sentences):
-      sentences[i] = Term("s", sentence.args[0], Term(sentence.args[1].functor.strip("\"")))
+      sentences[i] = Term("s", sentence.args[0], Constant(sentence.args[1].functor.strip("\"")))
     sentences = list2term(sentences)
 
     return (sentences, entity), self._encode_gender_label(gender)
@@ -293,12 +294,22 @@ class RawCLUTRRRelExtractValidationDataset(RawCLUTRRValidationDataset):
   def update_embeddings(self, encoder):
     self.dataset_db.update_embeddings_rel_extract(encoder)
 
+def gender_net_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 2)
+  for e in batch:
+    sentences, entity = e[0]
+    inputs.append((sentences, entity))
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+
+  return (inputs, labels)
+
 def rel_extract_dataloader_collate_fn(batch):
   inputs = []
-  labels = []
+  labels = torch.empty(0, 11)
   for e in batch:
     sample, entity_1, entity_2, embedding_part_1, embedding_part_2 = e[0]
     inputs.append((sample, entity_1, entity_2, embedding_part_1, embedding_part_2))
-    labels.append(e[1])
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
 
   return (inputs, labels)
