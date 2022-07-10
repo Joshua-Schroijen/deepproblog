@@ -10,7 +10,7 @@ from deepproblog.model import Model
 from deepproblog.dataset import DataLoader
 from deepproblog.examples.CLUTRR.architecture import Encoder, RelNet, GenderNet
 from deepproblog.examples.CLUTRR.data import CLUTRR, dataset_names
-from deepproblog.examples.CLUTRR.data.for_calibration import RawCLUTRRRelExtractValidationDataset, RawCLUTRRGenderNetValidationDataset, rel_extract_dataloader_collate_fn
+from deepproblog.examples.CLUTRR.data.for_calibration import RawCLUTRRRelExtractValidationDataset, RawCLUTRRGenderNetValidationDataset, gender_net_dataloader_collate_fn, rel_extract_dataloader_collate_fn
 from deepproblog.heuristics import *
 from deepproblog.train import TrainObject
 from deepproblog.utils import get_configuration, config_to_string, format_time_precise, split_dataset
@@ -40,7 +40,7 @@ def main(
   }
   loader = DataLoader(train_dataset, 4)
   rel_net_val_loader = TorchDataLoader(raw_datasets["rel_extract"], 4, collate_fn = rel_extract_dataloader_collate_fn)
-  gender_net_val_loader = TorchDataLoader(raw_datasets["gender_net"], 4)
+  gender_net_val_loader = TorchDataLoader(raw_datasets["gender_net"], 4, collate_fn = gender_net_dataloader_collate_fn)
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)
