@@ -126,24 +126,22 @@ class RelNet(ClassificationNetworkModule):
 
     def forward(self, ex, ey):
         x = torch.cat([ex, ey], 0)
-        breakpoint()
         x = self.embed(x.unsqueeze(0))
         if self.activation:
             x = self.activation_layer(x)
         return x[0]
 
-    def get_output_logits(self, input):
-        exs = input[3]
-        eys = input[4]
-
+    def get_output_logits(self, inputs):
         logits = torch.empty(0, self.out_size)
-        for ex, ey in zip(exs, eys):
+        for input in inputs:
+            ex = input[3]
+            ey = input[4]
+
             x = torch.cat([ex, ey], 0)
             x = self.embed(x.unsqueeze(0))
             logits = torch.cat((logits, x), dim = 0)
 
         return logits
-torch.Size([1, 8192])
 
 class GenderNet(nn.Module):
     def __init__(self, vocab, hidden_size, embed_size=None):
