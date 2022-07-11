@@ -39,7 +39,7 @@ class RawWAPDatasetDatabase:
   def get_sample_op1(self, i):
     self.cursor.execute(f"SELECT * FROM wap_op1_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -47,7 +47,7 @@ class RawWAPDatasetDatabase:
   def get_sample_op2(self, i):
     self.cursor.execute(f"SELECT * FROM wap_op2_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -55,7 +55,7 @@ class RawWAPDatasetDatabase:
   def get_sample_permute(self, i):
     self.cursor.execute(f"SELECT * FROM wap_permute_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -63,7 +63,7 @@ class RawWAPDatasetDatabase:
   def get_sample_swap(self, i):
     self.cursor.execute(f"SELECT * FROM wap_swap_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -71,7 +71,7 @@ class RawWAPDatasetDatabase:
   def get_length_op1(self):
     self.cursor.execute("SELECT COUNT(*) FROM wap_op1_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -79,7 +79,7 @@ class RawWAPDatasetDatabase:
   def get_length_op2(self):
     self.cursor.execute("SELECT COUNT(*) FROM wap_op2_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -87,7 +87,7 @@ class RawWAPDatasetDatabase:
   def get_length_permute(self):
     self.cursor.execute("SELECT COUNT(*) FROM wap_permute_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -95,7 +95,7 @@ class RawWAPDatasetDatabase:
   def get_length_swap(self):
     self.cursor.execute("SELECT COUNT(*) FROM wap_swap_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
