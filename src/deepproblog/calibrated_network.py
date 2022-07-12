@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from typing import Collection, Optional
 import torch
 from torch import nn, optim
-from torch.nn import functional as F
+from torch.nn import functional as F, Softmax
 from torch.utils.data import DataLoader
 
 from .network import Network, ClassificationNetworkModule
@@ -298,20 +298,22 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         self.model = model
         self.temperature = nn.Parameter(torch.ones(1) * 1.5)
 
-    def get_output_logits(self, input):
-        return self.model.get_output_logits(input)
+    def get_output_logits(self, *args):
+        return self.model.get_output_logits(*args)
     
-    def forward(self, input):
-        logits = self.model.get_output_logits(input)
+    def forward(self, *args):
+        logits = self.model.get_output_logits(*args)
         return self.temperature_scale(logits)
 
     def temperature_scale(self, logits):
         """
         Perform temperature scaling on logits
         """
+        if logits.dim() == 1:
+            logits = logits.unsqueeze(0)
         # Expand temperature to match the size of logits
         temperature = self.temperature.unsqueeze(1).expand(logits.size(0), logits.size(1))
-        return logits / temperature
+        return Softmax(-1)(logits / temperature)
 
     # This function probably should live outside of this class, but whatever
     def set_temperature(self, valid_loader):
@@ -346,7 +348,7 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         before_temperature_nll = nll_criterion(logits, labels).item()
         before_temperature_ece = ece_criterion(logits, labels).item()
         self._before_temperature_ece = before_temperature_ece
-        print('Before temperature - NLL: %.3f, ECE: %.3f' % (before_temperature_nll, before_temperature_ece))
+        print('Before temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, before_temperature_nll, before_temperature_ece))
 
         # Next: optimize the temperature w.r.t. NLL
         optimizer = optim.LBFGS([self.temperature], lr=0.01, max_iter=50)
@@ -362,8 +364,8 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         after_temperature_nll = nll_criterion(self.temperature_scale(logits), labels).item()
         after_temperature_ece = ece_criterion(self.temperature_scale(logits), labels).item()
         self._after_temperature_ece = after_temperature_ece
-        print('Optimal temperature: %.3f' % self.temperature.item())
-        print('After temperature - NLL: %.3f, ECE: %.3f' % (after_temperature_nll, after_temperature_ece))
+        print('Optimal temperature (%s): %.3f' % (self.model.name, self.temperature.item()))
+        print('After temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, after_temperature_nll, after_temperature_ece))
 
         return self
 
