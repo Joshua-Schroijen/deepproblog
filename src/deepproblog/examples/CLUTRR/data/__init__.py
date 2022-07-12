@@ -79,7 +79,6 @@ labels3 = [
 
 labels = labels1 + labels2
 
-
 def remove_gender(x):
     if x in labels3:
         return x
@@ -87,7 +86,6 @@ def remove_gender(x):
         return labels3[labels1.index(x)]
     except ValueError:
         return labels3[labels2.index(x)]
-
 
 class ListDataset(PyDataset):
     def __init__(self, data):
@@ -100,13 +98,11 @@ class ListDataset(PyDataset):
     def __len__(self):
         return len(self.data)
 
-
 def parse_relation(x):
     x = x.replace("-", "_")
     if x == "neice":
         x = "niece"
     return x
-
 
 class Story(object):
     def __init__(self, line=None, vocab=None, copy=None, edges=True):
@@ -154,20 +150,6 @@ class Story(object):
                     self.text[i] = self.text[i].lower()
                     word = self.text[i].lower()
                     vocab[word] += 1
-
-    # def tokenize(self, vocab):
-    #     tokenized = []
-    #     indices = defaultdict(list)
-    #     for i, word in enumerate(self.text):
-    #         if type(word) is int:
-    #             tokenized.append(0)
-    #             indices[word].append(i)
-    #         else:
-    #             try:
-    #                 tokenized.append(vocab[word])
-    #             except KeyError:
-    #                 tokenized.append(1)
-    #     return tokenized, indices
 
     def get_sentences(self):
         sentences = [[]]
@@ -296,20 +278,6 @@ class Story(object):
         )
         return Query(query_term, output_ind=[-2], p=float(self.positive))
 
-    # def to_query_split(self):
-    #     sentences = []
-    #     entities = [Constant(x) for x in sorted(self.entities.values())]
-    #     substitution = dict()
-    #     x, y = Constant(self.entities[self.query[0]]), Constant(self.entities[self.query[1]])
-    #     for e, s in self.get_sentences():
-    #         e = list2term([Constant(x) for x in e])
-    #         s = Constant('"' + ' '.join(s) + '"')
-    #         substitution[Term('s_{}'.format(len(sentences)))] = s
-    #         sentences.append(Term('s', e, Term('s_{}'.format(len(sentences)))))
-    #     query_term = Term('query_rel', list2term([list2term(entities)] + sentences), x, Term(self.answer), y)
-    #     return Query(query_term, substitution, output_ind=[-2], p=float(self.positive))
-
-
 class CLUTRR_Dataset(Dataset):
     def __init__(self, name, stories, vocab, gender, type, nr_negatives=0):
         self.gender = gender
@@ -336,10 +304,6 @@ class CLUTRR_Dataset(Dataset):
 
     def __repr__(self):
         return dataset_names[self.name]
-
-    # def tokenize(self, i):
-    #     return self.stories[i].tokenize(self.vocab)
-
 
 class CLUTRR(object):
     def __init__(self, name):
