@@ -51,7 +51,7 @@ class GraphSemiring(Semiring):
             if a.functor == "nn":
                 net, inputs = a.args[0], a.args[1]
                 inputs = inputs.apply_term(self.substitution)
-                val = self.values[(net, inputs)]
+                val = self.values[(net, inputs)].flatten()
                 i = 0
                 if len(a.args) == 3:
                     i = int(a.args[2])

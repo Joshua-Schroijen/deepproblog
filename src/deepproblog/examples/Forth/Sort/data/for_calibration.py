@@ -29,7 +29,7 @@ class RawSortDatasetDatabase:
   def get_sample(self, i):
     self.cursor.execute(f"SELECT * FROM sort_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -37,7 +37,7 @@ class RawSortDatasetDatabase:
   def get_length(self):
     self.cursor.execute("SELECT COUNT(*) FROM sort_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
