@@ -6,7 +6,7 @@ from deepproblog.dataset import DataLoader, QueryDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Forth import EncodeModule
-from deepproblog.examples.Forth.Add.data.for_calibration import RawAddNeural1ValidationDataset, RawAddNeural2ValidationDataset
+from deepproblog.examples.Forth.Add.data.for_calibration import RawAddNeural1ValidationDataset, RawAddNeural2ValidationDataset, neural_dataloader_collate_fn
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
@@ -31,10 +31,10 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10)), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(2)), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10)), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(2)), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     network1 = Network(net1, "neural1")
