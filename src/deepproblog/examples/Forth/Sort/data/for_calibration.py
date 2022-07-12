@@ -64,4 +64,13 @@ class RawSortValidationDataset(Dataset, ABC):
     return (X, Y), self._encode_label(label)
 
   def _encode_label(self, label):
-    return F.one_hot(torch.tensor(label), num_classes = 2).type(torch.FloatTensor)
+    return F.one_hot(torch.tensor(int(label)), num_classes = 2).type(torch.FloatTensor)
+
+def sort_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 2)
+  for e in batch:
+    X, Y = e[0]
+    inputs.append((X, Y))
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+  return (inputs, labels)
