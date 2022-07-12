@@ -75,4 +75,4 @@ def main(
   return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
-  fire.Fire(main())
+  fire.Fire(main)
