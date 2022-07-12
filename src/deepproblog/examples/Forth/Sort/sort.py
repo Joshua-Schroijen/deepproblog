@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader as TorchDataLoader
 from deepproblog.dataset import DataLoader, QueryDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
-from deepproblog.examples.Forth.Sort.data.for_calibration import RawSortValidationDataset
+from deepproblog.examples.Forth.Sort.data.for_calibration import RawSortValidationDataset, sort_dataloader_collate_fn
 from deepproblog.examples.Forth import EncodeModule
 from deepproblog.model import Model
 from deepproblog.network import Network
@@ -27,8 +27,8 @@ def main(
 
   networks_evolution_collectors = {}
   if calibrate == True:
-    fc1_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16), optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    fc1_test_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    fc1_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    fc1_test_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     fc1_network = Network(fc1, "swap_net", optimizer = torch.optim.Adam(fc1.parameters(), 1.0))
@@ -58,4 +58,4 @@ def main(
   return [train_obj, get_confusion_matrix(test_model, dev_queries, verbose = 0)]
 
 if __name__ == "__main__":
-  fire.Fire(main())
+  fire.Fire(main)
