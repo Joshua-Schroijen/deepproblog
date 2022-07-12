@@ -1,5 +1,11 @@
+import fire
 from random import randint
 from typing import Tuple
+
+import torch
+from torch.utils.data import DataLoader as TorchDataLoader
+
+from problog.logic import Constant
 
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.dataset import DataLoader
@@ -14,11 +20,6 @@ from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.dataset import NoiseMutatorDecorator, MutatingDataset
 from deepproblog.query import Query
 from deepproblog.utils import split_dataset, MutatingRawDataset
-
-from problog.logic import Constant
-
-import torch
-from torch.utils.data import DataLoader as TorchDataLoader
 
 SHUFFLE_SEED = 93891135229321951416666238953136246253198775800639367087882728959728265151654
 
@@ -77,4 +78,4 @@ def main(
   return [train, get_confusion_matrix(model, noisy_test_set, verbose=1)]
 
 if __name__ == "__main__":
-  main()
+  fire.Fire(main)

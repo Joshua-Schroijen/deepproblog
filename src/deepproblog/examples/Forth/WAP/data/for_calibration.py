@@ -313,3 +313,35 @@ class RawWAPSwapValidationDataset(RawWAPValidationDataset):
 
   def _encode_swap(self, swapped):
     return F.one_hot(torch.tensor(int(swapped)), num_classes = 2).type(torch.FloatTensor)
+
+def op1_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 4)
+  for e in batch:
+    inputs.append(e[0])
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+  return (inputs, labels)
+
+def op2_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 4)
+  for e in batch:
+    inputs.append(e[0])
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+  return (inputs, labels)
+
+def permute_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 6)
+  for e in batch:
+    inputs.append(e[0])
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+  return (inputs, labels)
+
+def swap_dataloader_collate_fn(batch):
+  inputs = []
+  labels = torch.empty(0, 2)
+  for e in batch:
+    inputs.append(e[0])
+    labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+  return (inputs, labels)
