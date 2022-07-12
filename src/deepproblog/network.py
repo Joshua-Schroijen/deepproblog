@@ -39,6 +39,7 @@ class Network(object):
         """
         self.network_module = network_module
         self.name = name
+        self.network_module.name = name
         # self.function = function
         # if function is None:
         self.function = get_tensor_function(self)

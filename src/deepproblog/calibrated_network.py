@@ -309,6 +309,8 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         """
         Perform temperature scaling on logits
         """
+        if logits.dim() == 1:
+            logits = logits.unsqueeze(0)
         # Expand temperature to match the size of logits
         temperature = self.temperature.unsqueeze(1).expand(logits.size(0), logits.size(1))
         return Softmax(-1)(logits / temperature)
