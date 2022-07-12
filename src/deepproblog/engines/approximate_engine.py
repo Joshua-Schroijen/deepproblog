@@ -143,7 +143,7 @@ class ApproximateEngine(Engine):
             assert len(variables) == 0
             net = self.model.networks[network]
             probabilities = net([term2list(inputs, False)])
-            probabilities = probabilities[0].flatten()
+            probabilities = probabilities[0]
             output_var.unify([float(x) for x in probabilities])
 
         func.arity = 2
