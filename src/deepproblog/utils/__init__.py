@@ -224,7 +224,7 @@ def bytes_to_tensor(blob):
 
 class MutatingRawDataset(TorchDataset):
   def __init__(self, inner_raw_dataset, mutator, p, seed = None):
-    super(Dataset, self).__init__()
+    super(TorchDataset, self).__init__()
     self.inner_raw_dataset = inner_raw_dataset
     self.mutator = mutator
     self.p = p
