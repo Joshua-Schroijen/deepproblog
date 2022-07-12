@@ -30,7 +30,7 @@ class RawHWFDatasetDatabase:
   def get_numbers_sample(self, i):
     self.cursor.execute(f"SELECT * FROM hwf_raw_data WHERE class = 'number' LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (result[0], result[1])
     else:
       return None
@@ -38,7 +38,7 @@ class RawHWFDatasetDatabase:
   def get_operators_sample(self, i):
     self.cursor.execute(f"SELECT * FROM hwf_raw_data WHERE class = 'operator' LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (result[0], result[1])
     else:
       return None
@@ -46,7 +46,7 @@ class RawHWFDatasetDatabase:
   def get_length_numbers(self):
     self.cursor.execute("SELECT length FROM hwf_raw_data_class_lengths WHERE class = 'number'")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -54,7 +54,7 @@ class RawHWFDatasetDatabase:
   def get_length_operators(self):
     self.cursor.execute("SELECT length FROM hwf_raw_data_class_lengths WHERE class = 'operator'")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None

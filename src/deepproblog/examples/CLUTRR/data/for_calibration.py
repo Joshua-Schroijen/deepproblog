@@ -33,7 +33,7 @@ class RawCLUTRRDatasetDatabase:
   def get_gender_net_sample(self, i):
     self.cursor.execute(f"SELECT * FROM CLUTRR_gender_net_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -41,7 +41,7 @@ class RawCLUTRRDatasetDatabase:
   def get_rel_extract_sample(self, i):
     self.cursor.execute(f"SELECT * FROM CLUTRR_rel_extract_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -49,7 +49,7 @@ class RawCLUTRRDatasetDatabase:
   def get_length_rel_extract(self):
     self.cursor.execute("SELECT COUNT(*) FROM CLUTRR_rel_extract_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -57,7 +57,7 @@ class RawCLUTRRDatasetDatabase:
   def get_length_gender_net(self):
     self.cursor.execute("SELECT COUNT(*) FROM CLUTRR_gender_net_raw_data")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -65,7 +65,7 @@ class RawCLUTRRDatasetDatabase:
   def update_embedding_rel_extract(self, sentence, entity_1, entity_2, encoder):
     new_embeddings = [tensor_to_bytes(output) for output in encoder.forward(Constant(sentence), Constant(entity_1), Constant(entity_2))]
     with self.connection:
-      self.cursor.execute("UPDATE CLUTRR_rel_extract_raw_data SET embedding_part_1 = ? embedding_part_2 = ? WHERE sentence = ? AND entity_1 = ? AND entity_2 = ?;", [new_embeddings[0], new_embeddings[1], sentence, entity_1, entity_2]) 
+      self.cursor.execute("UPDATE CLUTRR_rel_extract_raw_data SET embedding_part_1 = ?, embedding_part_2 = ? WHERE sentence = ? AND entity_1 = ? AND entity_2 = ?;", [new_embeddings[0], new_embeddings[1], sentence, entity_1, entity_2]) 
 
   def update_embeddings_rel_extract(self, encoder):
     self.cursor.execute(f"SELECT sentence, entity_1, entity_2 FROM CLUTRR_rel_extract_raw_data;")

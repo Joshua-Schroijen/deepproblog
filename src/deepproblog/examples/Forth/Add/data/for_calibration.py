@@ -34,7 +34,7 @@ class RawAddDatasetDatabase:
   def get_neural1_sample(self, i):
     self.cursor.execute(f"SELECT * FROM add_neural1_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -42,7 +42,7 @@ class RawAddDatasetDatabase:
   def get_neural2_sample(self, i):
     self.cursor.execute(f"SELECT * FROM add_neural2_raw_data LIMIT 1 OFFSET {i};")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return (*result,)
     else:
       return None
@@ -50,7 +50,7 @@ class RawAddDatasetDatabase:
   def get_length_neural1(self):
     self.cursor.execute("SELECT length FROM add_raw_data_lengths WHERE predicate = 'neural1'")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None
@@ -58,7 +58,7 @@ class RawAddDatasetDatabase:
   def get_length_neural2(self):
     self.cursor.execute("SELECT length FROM add_raw_data_lengths WHERE predicate = 'neural2'")
     result = self.cursor.fetchone()
-    if result != []:
+    if result:
       return result[0]
     else:
       return None

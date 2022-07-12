@@ -131,16 +131,24 @@ class RelNet(ClassificationNetworkModule):
             x = self.activation_layer(x)
         return x[0]
 
-    def get_output_logits(self, inputs):
-        logits = torch.empty(0, self.out_size)
-        for input in inputs:
-            ex = input[3]
-            ey = input[4]
+    def get_output_logits(self, *args):
+        if len(args) == 1:
+            inputs = args[0]
+            logits = torch.empty(0, self.out_size)
+            for input in inputs:
+                ex = input[3]
+                ey = input[4]
 
+                x = torch.cat([ex, ey], 0)
+                x = self.embed(x.unsqueeze(0))
+                logits = torch.cat((logits, x), dim = 0)
+        else:
+            ex = args[0]
+            ey = args[1]
             x = torch.cat([ex, ey], 0)
             x = self.embed(x.unsqueeze(0))
-            logits = torch.cat((logits, x), dim = 0)
-
+            logits = x[0]
+            
         return logits
 
 class GenderNet(nn.Module):
@@ -175,10 +183,24 @@ class GenderNet(nn.Module):
         x = self.classification(x)
         return x[0]
 
-    def get_output_logits(self, inputs):
-        logits = torch.empty(0, 2)
-        for input in inputs:
-            text, ent = input
+    def get_output_logits(self, *args):
+        if len(args) == 1:
+            inputs = args[0]
+            logits = torch.empty(0, 2)
+            for input in inputs:
+                text, ent = input
+                text = [x.args[1] for x in term2list(text, False)]
+                text = " ".join(t.value.strip('"') + " ." for t in text)
+                ent = int(ent)
+                x, indices = tokenize_cloze(text, [ent], self.vocab)
+                x = self.embedding(torch.LongTensor(x))
+                x, _ = self.lstm(x.unsqueeze(0))
+                x = x[:, -1, :]
+                x = self.classification[:-1](x)
+                logits = torch.cat((logits, x), dim = 0)
+        else:
+            text = args[0]
+            ent = args[1]
             text = [x.args[1] for x in term2list(text, False)]
             text = " ".join(t.value.strip('"') + " ." for t in text)
             ent = int(ent)
@@ -186,8 +208,6 @@ class GenderNet(nn.Module):
             x = self.embedding(torch.LongTensor(x))
             x, _ = self.lstm(x.unsqueeze(0))
             x = x[:, -1, :]
-            x = self.classification(x)[:-1]
-
-            logits = torch.cat((logits, x), dim = 0)
+            logits = self.classification[:-1](x)[0]
 
         return logits
