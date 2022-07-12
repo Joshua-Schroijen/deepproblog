@@ -117,7 +117,19 @@ class RawAddNeural2ValidationDataset(RawAddValidationDataset):
 
   def __getitem__(self, idx):
     I1, I2, Carry, NewCarry = self.dataset_db.get_neural2_sample(idx)
-    return (I1, I2, Carry), NewCarry
+    return (I1, I2, Carry), self._encode_label(NewCarry)
 
   def _encode_label(self, label):
     return F.one_hot(torch.tensor(label), num_classes = 2).type(torch.FloatTensor)
+
+def neural_dataloader_collate_fn(output_size):
+  def _neural_dataloader_collate_fn(batch):
+    inputs = []
+    labels = torch.empty(0, output_size)
+    for e in batch:
+      I1, I2, Carry = e[0]
+      inputs.append((I1, I2, Carry))
+      labels = torch.cat((labels, e[1].unsqueeze(0)), dim = 0)
+    return (inputs, labels)
+  
+  return _neural_dataloader_collate_fn

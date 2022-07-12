@@ -37,7 +37,6 @@ model_urls = {
     "alexnet": "https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth",
 }
 
-
 class DummyNet(nn.Module):
     def __init__(self, values: Dict[Term, Union[list, torch.Tensor]]):
         super().__init__()
@@ -46,7 +45,6 @@ class DummyNet(nn.Module):
     def forward(self, x):
         output = self.values[x]
         return torch.tensor(output, requires_grad=True)
-
 
 class SmallNet(ClassificationNetworkModule):
     def __init__(self, num_classes=1000, size=None):
