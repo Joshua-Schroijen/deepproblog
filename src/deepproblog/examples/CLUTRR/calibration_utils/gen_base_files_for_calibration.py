@@ -33,14 +33,13 @@ def main(
 
   clutrr = CLUTRR(configuration["dataset"])
   dataset = clutrr.get_dataset(".*train", gender = True, type = "split")
-  train_dataset, val_dataset = split_dataset(dataset)
+  _, val_dataset = split_dataset(dataset)
   print(dataset_names[configuration["dataset"]])
   loader = DataLoader(val_dataset, 4)
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)
 
-  networks_evolution_collectors = {}
   lstm_net = Network(
     lstm, "encoder", optimizer = torch.optim.Adam(lstm.parameters(), lr = 1e-2)
   )
