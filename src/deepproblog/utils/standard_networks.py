@@ -9,6 +9,7 @@ class MLP(ClassificationNetworkModule):
     def __init__(self, *sizes, activation=nn.ReLU, softmax=True, batch=True):
         super(MLP, self).__init__()
         layers = []
+        self.sizes = sizes
         self.softmax = softmax
         self.batch = batch
         for i in range(len(sizes) - 2):
@@ -26,9 +27,17 @@ class MLP(ClassificationNetworkModule):
         return x
 
     def get_output_logits(self, input):
-        if not self.batch:
-            input = input.unsqueeze(0)
-        return self.nn[:-1](input) if self.softmax else self.nn(input)
+        if type(input) == list:
+            logits = torch.empty(0, self.sizes[-1])
+            for i in input:
+                j = i.unsqueeze(0)
+                k = self.nn[:-1](j) if self.softmax else self.nn(j)
+                logits = torch.cat((logits, k), dim = 0)
+            return logits
+        else:
+            if not self.batch:
+                input = input.unsqueeze(0)
+            return self.nn[:-1](input) if self.softmax else self.nn(input)
 
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
