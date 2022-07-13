@@ -222,6 +222,12 @@ def bytes_to_tensor(blob):
   buffer.seek(0)
   return torch.load(buffer)
 
+def random_one_hot_tensor(numel):
+  one_hot = torch.zeros(numel, dtype = torch.float32)
+  hot_index = random.randint(0, numel - 1)
+  one_hot[hot_index] = 1
+  return one_hot
+
 class MutatingRawDataset(TorchDataset):
   def __init__(self, inner_raw_dataset, mutator, p, seed = None):
     super(TorchDataset, self).__init__()
