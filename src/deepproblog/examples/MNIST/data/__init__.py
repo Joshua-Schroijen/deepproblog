@@ -14,7 +14,7 @@ from problog.logic import Term, list2term, Constant
 
 from deepproblog.dataset import Dataset
 from deepproblog.query import Query
-from deepproblog.utils import split_torch_dataset
+from deepproblog.utils import split_torch_dataset, random_one_hot_tensor
 
 _DATA_ROOT = Path(__file__).parent
 
@@ -211,3 +211,6 @@ class RawMNISTValidationDataset(TorchDataset):
 
     def _encode_label(self, label):
         return F.one_hot(torch.tensor(label), num_classes = 10).type(torch.FloatTensor)
+
+def MNIST_raw_noise(_, item: Tuple[torch.Tensor, torch.Tensor]):
+  return (item[0], random_one_hot_tensor(10))
