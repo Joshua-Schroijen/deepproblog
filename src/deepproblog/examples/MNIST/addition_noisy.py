@@ -28,7 +28,9 @@ def noise(_, query: Query):
 
 def main(
   calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   dataset = MNISTOperator(
     dataset_name = "train",
@@ -40,6 +42,13 @@ def main(
   noisy_dataset_train = MutatingDataset(dataset, NoiseMutatorDecorator(0.2, noise))
   queries = DataLoader(noisy_dataset_train, 2)
   noisy_dataset_validation = MutatingRawDataset(RawMNISTValidationDataset(), MNIST_raw_noise, 0.2)
+  test_set = MNISTOperator(
+      dataset_name = "test",
+      function_name = "addition_noisy",
+      operator = sum,
+      size = 1,
+  )
+  noisy_test_set = MutatingDataset(test_set, NoiseMutatorDecorator(0.2, noise))
 
   network = MNIST_Net()
   networks_evolution_collectors = {}
@@ -60,18 +69,16 @@ def main(
 
   train = train_model(model, queries, 1, networks_evolution_collectors, log_iter = 100)
 
-  test_set = MNISTOperator(
-      dataset_name = "test",
-      function_name = "addition_noisy",
-      operator = sum,
-      size = 1,
-  )
-  noisy_test_set = MutatingDataset(test_set, NoiseMutatorDecorator(0.2, noise))
-
   if calibrate:
     net.calibrate()
 
-  return [train, get_confusion_matrix(model, noisy_test_set, verbose=1)]
+  if save_model_state:
+    if model_state_name:
+      model.save_state("snapshot/" + model_state_name + ".pth")
+    else:
+      model.save_state("snapshot/addition_noisy.pth")
+
+  return [train, get_confusion_matrix(model, noisy_test_set, verbose = 0)]
 
 if __name__ == "__main__":
   fire.Fire(main)

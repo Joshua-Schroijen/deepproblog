@@ -16,7 +16,9 @@ from deepproblog.utils.stop_condition import Threshold, StopOnPlateau
 
 def main(
   calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   batch_size = 5
   if calibrate == True:
@@ -62,6 +64,12 @@ def main(
   if calibrate:
     coin_net1.calibrate()
     coin_net2.calibrate()
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state("snapshot/" + model_state_name + ".pth")
+    else:
+      model.save_state("snapshot/coins.pth")
 
   return [train_obj, get_confusion_matrix(model, test_dataset, verbose = 0)]
 
