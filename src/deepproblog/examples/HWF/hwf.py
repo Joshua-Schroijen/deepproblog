@@ -22,6 +22,8 @@ def main(
   i = 0,
   calibrate = False,
   calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
   logging = False
 ):
   configurations = {
@@ -31,19 +33,15 @@ def main(
     "run": range(5),
   }
   configuration = get_configuration(configurations, i)
-
   name = "hwf_" + config_to_string(configuration) + "_" + format_time_precise()
   torch.manual_seed(configuration["run"])
-
   N = configuration["N"]
-
   if configuration["method"] == "exact":
     if N > 3:
       exit()
 
   curriculum = configuration["curriculum"]
   print("Training HWF with N={} and curriculum={}".format(N, curriculum))
-
   
   if curriculum:
     dataset_filter = lambda x: x <= N
@@ -62,7 +60,6 @@ def main(
   encoder = SymbolEncoder()
   network1 = SymbolClassifier(encoder, 10)
   network2 = SymbolClassifier(encoder, 4)
-
   networks_evolution_collectors = {}
   if calibrate == True:
     raw_hwf_dataset_database = RawHWFDatasetDatabase()
@@ -109,13 +106,18 @@ def main(
     net1.calibrate()
     net2.calibrate()
 
-  model.save_state("models/" + name + ".pth")
   cm = get_confusion_matrix(model, test_dataset, eps = 1e-6, verbose = 0)
   final_acc = cm.accuracy()
   if logging == True:
     train_log.logger.comment("Accuracy {}".format(final_acc))
     train_log.logger.comment(dumps(model.get_hyperparameters()))
     train_log.write_to_file("log/" + name)
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state("snapshot/" + model_state_name + ".pth")
+    else:
+      model.save_state("snapshot/" + name + ".pth")
 
   return [train_log, cm]
 
