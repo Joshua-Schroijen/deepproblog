@@ -1,6 +1,7 @@
 import fire
-from torch.utils.data import DataLoader as TorchDataLoader
 from json import dumps
+from torch.utils.data import DataLoader as TorchDataLoader
+import statistics
 
 from deepproblog.engines import ApproximateEngine
 from deepproblog.evaluate import get_confusion_matrix
@@ -19,10 +20,11 @@ from deepproblog.utils.stop_condition import Threshold, StopOnPlateau
 def main(
   i = 0,
   calibrate = False,
-  logging = False
+  logging = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   dsets = ["sys_gen_{}".format(i) for i in range(3)] + ["noise_{}".format(i) for i in range(4)]
-
   configurations = {"method": ["gm"], "dataset": dsets, "run": range(5)}
   configuration = get_configuration(configurations, i)
   name = "clutrr_" + config_to_string(configuration) + "_" + format_time_precise()
@@ -44,7 +46,6 @@ def main(
 
   embed_size = 32
   lstm = Encoder(clutrr.get_vocabulary(), embed_size, p_drop = 0.0)
-
   networks_evolution_collectors = {}
   lstm_net = Network(
     lstm, "encoder", optimizer = torch.optim.Adam(lstm.parameters(), lr = 1e-2)
@@ -65,7 +66,7 @@ def main(
     gender_net = Network(
       gender_net,
       "gender_net",
-      optimizer=torch.optim.Adam(gender_net.parameters(), lr=1e-2),
+      optimizer = torch.optim.Adam(gender_net.parameters(), lr = 1e-2),
     )
   rel_net.optimizer = torch.optim.Adam(rel_net.parameters(), lr = 1e-2)
 
@@ -82,7 +83,7 @@ def main(
   train_log = TrainObject(model)
   train_log.train(
     loader,
-    Threshold("Accuracy", 1.0) + StopOnPlateau("Accuracy", patience=5, warm_up = 10),
+    Threshold("Accuracy", 1.0) + StopOnPlateau("Accuracy", patience = 5, warm_up = 10),
     initial_test = False,
     test = lambda x: [
       (
@@ -94,22 +95,30 @@ def main(
     test_iter = 250,
   )
 
-  model.save_state("models/" + name + ".pth")
-
   raw_datasets["rel_extract"].update_embeddings(lstm)
   if calibrate:
     rel_net.calibrate()
     gender_net.calibrate()
 
+  cms = []
   for dataset in test_datasets:
     cm = get_confusion_matrix(model, test_datasets[dataset], verbose = 0)
     final_acc = cm.accuracy()
     if logging == True:
       train_log.logger.comment("{}\t{}".format(dataset, final_acc))
+    cms.append(cm)
 
   if logging == True:
     train_log.logger.comment(dumps(model.get_hyperparameters()))
     train_log.write_to_file("log/" + name)
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state(f"models/{model_state_name}.pth")
+    else:
+      model.save_state(f"models/{name}.pth")
+
+  return [train_log, cms]
 
 if __name__ == "__main__":
   fire.Fire(main)
