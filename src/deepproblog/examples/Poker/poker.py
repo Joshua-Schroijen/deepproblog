@@ -16,18 +16,19 @@ import torch
 
 def main(
   calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   datasets = {
-      "unfair": PokerSeparate(
-          "unfair", probs = [0.2, 0.4, 0.15, 0.25], extra_supervision = True
-      ),
-      "fair_test": PokerSeparate("fair_test"),
+    "unfair": PokerSeparate(
+      "unfair", probs = [0.2, 0.4, 0.15, 0.25], extra_supervision = True
+    ),
+    "fair_test": PokerSeparate("fair_test"),
   }
   dataset = "unfair"
 
   batch_size = 50
-
   if calibrate == True:
     rest_train_set, validation_set = split_dataset(datasets[dataset])
     train_loader = DataLoader(rest_train_set, batch_size)
@@ -60,21 +61,27 @@ def main(
   model.add_tensor_source("fair_test", datasets["fair_test"])
 
   train_obj = train_model(
-      model,
-      train_loader,
-      10,
-      networks_evolution_collectors,
-      loss_function_name = "mse",
-      log_iter = len(datasets["unfair"]) // batch_size,
-      test_iter = 5 * len(datasets["unfair"]) // batch_size,
-      test = lambda x: [
-          ("Accuracy", get_confusion_matrix(model, datasets["fair_test"]).accuracy())
-      ],
-      infoloss = 0.5,
+    model,
+    train_loader,
+    10,
+    networks_evolution_collectors,
+    loss_function_name = "mse",
+    log_iter = len(datasets["unfair"]) // batch_size,
+    test_iter = 5 * len(datasets["unfair"]) // batch_size,
+    test = lambda x: [
+      ("Accuracy", get_confusion_matrix(model, datasets["fair_test"]).accuracy())
+    ],
+    infoloss = 0.5,
   )
 
   if calibrate == True:
     net.calibrate()
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state("snapshot/" + model_state_name + ".pth")
+    else:
+      model.save_state("snapshot/poker.pth")
 
   cm = get_confusion_matrix(model, datasets["fair_test"], verbose = 0)
   return [train_obj, cm]

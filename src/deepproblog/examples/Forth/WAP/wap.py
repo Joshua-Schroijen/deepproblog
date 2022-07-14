@@ -12,7 +12,9 @@ from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECE
 from deepproblog.train import train_model
 
 def main(
-  calibrate = False
+  calibrate = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   train_queries = QueryDataset("data/train_s.pl")
   dev_queries = QueryDataset("data/dev_s.pl")
@@ -31,7 +33,6 @@ def main(
   }
 
   networks = get_networks(0.005, 0.5)
-
   networks_evolution_collectors = {}
   if calibrate == True:
     train_networks = \
@@ -59,7 +60,8 @@ def main(
     networks_evolution_collectors,
     log_iter = 10,
     test = lambda x: [
-        ("Accuracy", get_confusion_matrix(test_model, test_queries).accuracy())
+      #  ("Accuracy", get_confusion_matrix(test_model, test_queries).accuracy())
+      ("Accuracy", get_confusion_matrix(model, test_queries, verbose = 0).accuracy())
     ],
     test_iter=30,
   )
@@ -70,6 +72,12 @@ def main(
   if calibrate:
     for train_network in train_networks[1:]:
       train_network.calibrate()
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state(f"snapshot/{model_state_name}.pth")
+    else:
+      model.save_state(f"snapshot/forth_WAP.pth")
 
   #return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
   return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
