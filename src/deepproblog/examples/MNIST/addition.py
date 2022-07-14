@@ -19,7 +19,7 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
-from deepproblog.utils import get_configuration, format_time_precise, config_to_string, split_dataset
+from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
 import torch.utils.data
 
@@ -27,6 +27,8 @@ def main(
   i = 1,
   calibrate = False,
   calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
   logging = False
 ):
   parameters = {
@@ -36,23 +38,19 @@ def main(
       "exploration": [False, True],
       "run": range(5),
   }
-
   configuration = get_configuration(parameters, i)
   torch.manual_seed(configuration["run"])
-
   name = "addition_" + config_to_string(configuration) + "_" + format_time_precise()
   print(name)
 
   train_set = addition(configuration["N"], "train")
   test_set = addition(configuration["N"], "test")
-
   batch_size = 2
   loader = DataLoader(train_set, batch_size, False)
   if calibrate == True:
     validation_loader_for_calibration = TorchDataLoader(RawMNISTValidationDataset(), batch_size)
 
   network = MNIST_Net()
-
   pretrain = configuration["pretrain"]
   if pretrain is not None and pretrain > 0:
       network.load_state_dict(
@@ -82,7 +80,6 @@ def main(
   model.add_tensor_source("test", MNIST_test)
 
   train = train_model(model, loader, 1, networks_evolution_collectors, log_iter = 100, profile = 0)
-  model.save_state("snapshot/" + name + ".pth")
 
   if logging == True:
     train.logger.comment(dumps(model.get_hyperparameters()))
@@ -93,6 +90,12 @@ def main(
 
   if calibrate == True:
     net.calibrate()
+
+  if save_model_state:
+    if model_state_name:
+      model.save_state("snapshot/" + model_state_name + ".pth")
+    else:
+      model.save_state("snapshot/" + name + ".pth")
 
   return [train, get_confusion_matrix(model, test_set, verbose = 0)]
 

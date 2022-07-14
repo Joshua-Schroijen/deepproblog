@@ -14,11 +14,12 @@ from deepproblog.train import train_model
 
 def main(
   calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   train = 2
   test = 8
-
   train_queries = QueryDataset("data/train{}_test{}_train.txt".format(train, test))
   test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
   val = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
@@ -28,7 +29,6 @@ def main(
 
   net1 = EncodeModule(30, 50, 10, "tanh")
   net2 = EncodeModule(22, 10, 2, "tanh")
-
   networks_evolution_collectors = {}
   if calibrate == True:
     network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10)), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
@@ -64,7 +64,15 @@ def main(
     test_network1.calibrate()
     test_network2.calibrate()
 
-  cm = get_confusion_matrix(test_model, val, verbose = 0)
+  if save_model_state:
+    if model_state_name:
+      model.save_state(f"snapshot/{model_state_name}.pth")
+    else:
+      model.save_state(f"snapshot/forth_add.pth")
+
+  #cm = get_confusion_matrix(test_model, val, verbose = 0)
+  cm = get_confusion_matrix(model, test_queries, verbose = 0)
+
   return [train_obj, cm]
 
 if __name__ == "__main__":

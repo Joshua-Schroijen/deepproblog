@@ -14,17 +14,18 @@ from deepproblog.train import train_model
 
 def main(
   calibrate = False,
-  calibrate_after_each_train_iteration = False
+  calibrate_after_each_train_iteration = False,
+  save_model_state = True,
+  model_state_name = None,
 ):
   train = 2
   test = 8
-
   train_queries = QueryDataset("data/train{}_test{}_train.txt".format(train, test))
   dev_queries = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
   test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
   raw_validation_dataset = RawSortValidationDataset()
+  
   fc1 = EncodeModule(20, 20, 2)
-
   networks_evolution_collectors = {}
   if calibrate == True:
     fc1_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
@@ -47,7 +48,8 @@ def main(
     log_iter = 50,
     test_iter = len(train_queries),
     test = lambda x: [
-        ("Accuracy", get_confusion_matrix(test_model, dev_queries).accuracy())
+      #  ("Accuracy", get_confusion_matrix(test_model, dev_queries, verbose = 0).accuracy())
+      ("Accuracy", get_confusion_matrix(model, dev_queries, verbose = 0).accuracy())
     ],
   )
 
@@ -55,7 +57,14 @@ def main(
     fc1_network.calibrate()
     fc1_test_network.calibrate()
 
-  return [train_obj, get_confusion_matrix(test_model, dev_queries, verbose = 0)]
+  if save_model_state:
+    if model_state_name:
+      model.save_state(f"snapshot/{model_state_name}.pth")
+    else:
+      model.save_state(f"snapshot/forth_sort.pth")
+      
+  #return [train_obj, get_confusion_matrix(test_model, dev_queries, verbose = 0)]
+  return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
   fire.Fire(main)
