@@ -5,6 +5,10 @@ from .network import Network
 
 class NetworksEvolutionCollector(ABC):
   @abstractmethod
+  def collection_as_dict(self):
+    pass
+
+  @abstractmethod
   def collect_before_training(self, networks: Collection[Network]):
     pass
 
