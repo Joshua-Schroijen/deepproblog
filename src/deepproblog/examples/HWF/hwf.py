@@ -1,16 +1,19 @@
 import fire
 from json import dumps
+import random
 from sys import argv
 
 from torch.optim import Adam
 from torch.utils.data import DataLoader as TorchDataLoader
+
+from problog.logic import Constant
 
 from deepproblog.engines import ApproximateEngine, ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
-from deepproblog.dataset import DataLoader 
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDatasetWithItems 
 from deepproblog.train import train_model
 from deepproblog.examples.HWF.data import HWFDataset, hwf_images
 from deepproblog.examples.HWF.data.for_calibration import RawHWFDatasetDatabase, RawHWFNumbersValidationDataset, RawHWFOperatorsValidationDataset
@@ -24,6 +27,8 @@ def main(
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
   logging = False
 ):
   configurations = {
@@ -42,7 +47,7 @@ def main(
 
   curriculum = configuration["curriculum"]
   print("Training HWF with N={} and curriculum={}".format(N, curriculum))
-  
+
   if curriculum:
     dataset_filter = lambda x: x <= N
     calibration_validation_dataset_filter = lambda x: x <= max(N, 3)
@@ -55,6 +60,9 @@ def main(
     dataset = HWFDataset("train2", dataset_filter)
     val_dataset = HWFDataset("val", calibration_validation_dataset_filter)
     test_dataset = HWFDataset("test", dataset_filter)
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output([Constant(random.uniform(-450, 7000))])
+    dataset = MutatingDatasetWithItems(dataset, NoiseMutatorDecorator(label_noise_probability, label_noise))
   loader = DataLoader(dataset, 32, shuffle = True)
 
   encoder = SymbolEncoder()
