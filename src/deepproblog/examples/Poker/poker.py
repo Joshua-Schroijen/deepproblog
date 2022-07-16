@@ -1,7 +1,9 @@
 import fire
+import random
+import torch
 from torch.utils.data import DataLoader as TorchDataLoader
-
-from deepproblog.dataset import DataLoader
+from problog.logic import Constant
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDataset
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Poker import PokerSeparate, RawPokerNet1ValidationDataset
@@ -9,16 +11,18 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.optimizer import SGD
+from deepproblog.query import Query
 from deepproblog.train import train_model
 from deepproblog.utils import split_dataset
 from deepproblog.utils.standard_networks import smallnet
-import torch
 
 def main(
   calibrate = False,
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   datasets = {
     "unfair": PokerSeparate(
@@ -27,6 +31,10 @@ def main(
     "fair_test": PokerSeparate("fair_test"),
   }
   dataset = "unfair"
+
+  if train_with_label_noise:
+    label_noise = lambda q: q.replace_output([[Constant("win"), Constant("loss"), Constant("draw")][random.randint(0, 2)]])
+    datasets["unfair"] = MutatingDataset(datasets["unfair"], NoiseMutatorDecorator(label_noise_probability, label_noise))
 
   batch_size = 50
   if calibrate == True:
