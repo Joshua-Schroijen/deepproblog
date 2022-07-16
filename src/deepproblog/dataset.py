@@ -270,6 +270,14 @@ class MutatingDataset(Dataset):
         raise NotImplementedError("__getitem__ is not implemented for MutatingDataset")
 
 
+class MutatingDatasetWithItems(MutatingDataset):
+    def __init__(self, inner_dataset: Dataset, mutator: Callable[[int, Query], Query]):
+        super().__init__(inner_dataset, mutator)
+
+    def __getitem__(self, item):
+        return self.inner_dataset[item]
+
+
 class NoiseMutatorDecorator:
     """Dataset mutator that will mutate with a certain probability"""
 
