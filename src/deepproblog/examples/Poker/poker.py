@@ -33,7 +33,7 @@ def main(
   dataset = "unfair"
 
   if train_with_label_noise:
-    label_noise = lambda q: q.replace_output([[Constant("win"), Constant("loss"), Constant("draw")][random.randint(0, 2)]])
+    label_noise = lambda _, q: q.replace_output([[Constant("win"), Constant("loss"), Constant("draw")][random.randint(0, 2)]])
     datasets["unfair"] = MutatingDataset(datasets["unfair"], NoiseMutatorDecorator(label_noise_probability, label_noise))
 
   batch_size = 50
