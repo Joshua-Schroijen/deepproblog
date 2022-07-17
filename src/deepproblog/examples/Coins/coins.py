@@ -1,8 +1,11 @@
 import fire
+import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
 
-from deepproblog.dataset import DataLoader
+from problog.logic import Constant
+
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Coins.data.dataset import train_dataset, test_dataset, RawCoinsNet1ValidationDataset, RawCoinsNet2ValidationDataset
@@ -19,15 +22,22 @@ def main(
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   batch_size = 5
+  label_noise = lambda _, q: q.replace_output([[Constant("win"), Constant("loss")][random.randint(0, 1)]])
   if calibrate == True:
     rest_train_set, validation_set = split_dataset(train_dataset)
+    if train_with_label_noise:
+      rest_train_set = MutatingDatasetWithItems(rest_train_set, NoiseMutatorDecorator(label_noise_probability, label_noise))
     train_loader = DataLoader(rest_train_set, batch_size)
     calibration_net1_valid_loader = TorchDataLoader(RawCoinsNet1ValidationDataset(validation_set), batch_size)
     calibration_net2_valid_loader = TorchDataLoader(RawCoinsNet2ValidationDataset(validation_set), batch_size)
   else:
-    train_loader = DataLoader(train_dataset, batch_size)
+    if train_with_label_noise:
+      train_dataset_ = MutatingDatasetWithItems(train_dataset, NoiseMutatorDecorator(label_noise_probability, label_noise))
+    train_loader = DataLoader(train_dataset_, batch_size)
   lr = 1e-4
 
   networks_evolution_collectors = {}
