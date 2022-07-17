@@ -26,7 +26,7 @@ def main(
   label_noise_probability = 0.2,
 ):
   batch_size = 5
-  label_noise = lambda _, q: q.replace_output([[Constant("win"), Constant("loss")][random.randint(0, 1)]])
+  label_noise = lambda _, q: q.replace_output([random.choice([Constant("win"), Constant("loss")])])
   if calibrate == True:
     rest_train_set, validation_set = split_dataset(train_dataset)
     if train_with_label_noise:

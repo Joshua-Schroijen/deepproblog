@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader as TorchDataLoader
 
 from problog.logic import Constant
 
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.dataset import DataLoader, QueryDataset, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
@@ -11,7 +12,7 @@ from deepproblog.examples.Forth.WAP.data.for_calibration import RawWAPOp1Validat
 from deepproblog.examples.Forth.WAP.wap_network import get_networks
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.query import Query
 from deepproblog.train import train_model
 
 def main(
@@ -25,7 +26,11 @@ def main(
   dev_queries = QueryDataset("data/dev_s.pl")
   test_queries = QueryDataset("data/test_s.pl")
   if train_with_label_noise:
-    label_noise = lambda _, q: q.replace_output([Constant(float(random.randint(1, 86)))])
+    def label_noise(_, q: Query):
+      flip = random.choice([False, True])
+      if flip:
+        q.replace_output([Constant(float(random.randint(1, 86)))])
+      return q
     train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
   raw_datasets = {
     "nn_permute": RawWAPPermuteValidationDataset(),
