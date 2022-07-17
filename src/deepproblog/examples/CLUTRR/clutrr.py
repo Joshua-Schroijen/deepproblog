@@ -1,17 +1,19 @@
 import fire
 from json import dumps
+import random
 from torch.utils.data import DataLoader as TorchDataLoader
-import statistics
 
+from problog.logic import Constant
+
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ApproximateEngine
 from deepproblog.evaluate import get_confusion_matrix
-from deepproblog.network import Network
-from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
-from deepproblog.model import Model
-from deepproblog.dataset import DataLoader
 from deepproblog.examples.CLUTRR.architecture import Encoder, RelNet, GenderNet
 from deepproblog.examples.CLUTRR.data import CLUTRR, dataset_names
 from deepproblog.examples.CLUTRR.data.for_calibration import RawCLUTRRRelExtractValidationDataset, RawCLUTRRGenderNetValidationDataset, gender_net_dataloader_collate_fn, rel_extract_dataloader_collate_fn
+from deepproblog.network import Network
+from deepproblog.model import Model
 from deepproblog.heuristics import *
 from deepproblog.train import TrainObject
 from deepproblog.utils import get_configuration, config_to_string, format_time_precise, split_dataset
@@ -23,6 +25,8 @@ def main(
   logging = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   dsets = ["sys_gen_{}".format(i) for i in range(3)] + ["noise_{}".format(i) for i in range(4)]
   configurations = {"method": ["gm"], "dataset": dsets, "run": range(5)}
@@ -34,6 +38,21 @@ def main(
   clutrr = CLUTRR(configuration["dataset"])
   dataset = clutrr.get_dataset(".*train", gender = True, type = "split")
   train_dataset, val_dataset = split_dataset(dataset)
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output(random.choice([
+      Constant("child"),
+      Constant("child_in_law"),
+      Constant("parent"),
+      Constant("parent_in_law"),
+      Constant("sibling"),
+      Constant("sibling_in_law"),
+      Constant("grandparent"),
+      Constant("grandchild"),
+      Constant("nephew"),
+      Constant("uncle"),
+      Constant("so")
+    ]))
+    train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
   raw_datasets = {
