@@ -1,15 +1,19 @@
 import fire
+import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
 
-from deepproblog.dataset import DataLoader, QueryDataset
+from problog.logic import list2term, term2list
+
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.dataset import DataLoader, QueryDataset, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Forth.Sort.data.for_calibration import RawSortValidationDataset, sort_dataloader_collate_fn
 from deepproblog.examples.Forth import EncodeModule
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.query import Query
 from deepproblog.train import train_model
 
 def main(
@@ -17,12 +21,17 @@ def main(
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   train = 2
   test = 8
   train_queries = QueryDataset("data/train{}_test{}_train.txt".format(train, test))
   dev_queries = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
   test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output([list2term(sorted(term2list(q.query.args[0]), reverse = True))])
+    train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
   raw_validation_dataset = RawSortValidationDataset()
   
   fc1 = EncodeModule(20, 20, 2)
