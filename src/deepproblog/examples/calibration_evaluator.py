@@ -54,21 +54,38 @@ def evaluate_MNIST_addition(logger):
 
   log_heading(logger, "Evaluating MNIST addition")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = addition.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_addition_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_addition_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_addition_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = addition.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_addition_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration"s)
+  [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_addition_tf_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_addition_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -104,21 +121,38 @@ def evaluate_coins(logger):
 
   log_heading(logger, "Evaluating Coins")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = coins.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_coins_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_coins_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_coins_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = coins.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_coins_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_coins_tf_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = coins.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_coins_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -129,21 +163,38 @@ def evaluate_poker(logger):
 
   log_heading(logger, "Evaluating Poker")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = poker.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_poker_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_poker_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_poker_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = poker.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_poker_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_poker_tf_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = poker.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_poker_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -154,21 +205,38 @@ def evaluate_HWF(logger):
 
   log_heading(logger, "Evaluating HWF")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = hwf.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_hwf_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_hwf_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_hwf_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = hwf.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_hwf_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_hwf_tf_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = hwf.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_hwf_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -179,21 +247,38 @@ def evaluate_Forth_Add(logger):
 
   log_heading(logger, "Evaluating Forth/Add")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = forth_add.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_add_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_add_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_forth_add_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = forth_add.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_add_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_add_tf_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = forth_add.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_add_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -204,21 +289,38 @@ def evaluate_Forth_Sort(logger):
 
   log_heading(logger, "Evaluating Forth/Sort")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = forth_sort.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_sort_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_sort_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = True)
   dump_data_of_interest("calibration_evaluation_forth_sort_tt.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = forth_sort.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_sort_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_sort_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "With calibration after each train iteration")
+  [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = True, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_sort_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -229,15 +331,26 @@ def evaluate_Forth_WAP(logger):
 
   log_heading(logger, "Evaluating Forth/WAP")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = forth_wap.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_wap_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = forth_wap.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_forth_wap_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = forth_wap.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_wap_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = forth_wap.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_forth_wap_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -248,15 +361,26 @@ def evaluate_CLUTRR(logger):
 
   log_heading(logger, "Evaluating CLUTRR")
 
-  log_subheading(logger, "Without calibration")
+  log_subheading(logger, "Without calibration, no label noise")
   [train, confusion_matrix] = clutrr.main(calibrate = False, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_clutrr_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  log_subheading(logger, "With calibration")
+  log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = clutrr.main(calibrate = True, calibrate_after_each_train_iteration = False)
   dump_data_of_interest("calibration_evaluation_clutrr_tf.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "Without calibration, with label noise")
+  [train, confusion_matrix] = clutrr.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_clutrr_ff_ln.json", train, confusion_matrix)
+  log_empty_line(logger)
+
+  log_subheading(logger, "With calibration, with label noise")
+  log_subheading(logger, "Without calibration after each train iteration")
+  [train, confusion_matrix] = clutrr.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  dump_data_of_interest("calibration_evaluation_clutrr_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
