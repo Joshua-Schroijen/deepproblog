@@ -1,10 +1,10 @@
 import fire
 from json import dumps
-
+import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
-
-from deepproblog.dataset import DataLoader
+from problog.logic import Constant
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ApproximateEngine, ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.MNIST.network import MNIST_Net
@@ -29,6 +29,8 @@ def main(
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
   logging = False
 ):
   parameters = {
@@ -44,6 +46,9 @@ def main(
   print(name)
 
   train_set = addition(configuration["N"], "train")
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output([Constant(random.randint(0, 18))])
+    train_set = MutatingDatasetWithItems(train_set, NoiseMutatorDecorator(label_noise_probability, label_noise))
   test_set = addition(configuration["N"], "test")
   batch_size = 2
   loader = DataLoader(train_set, batch_size, False)

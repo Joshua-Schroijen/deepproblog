@@ -1,7 +1,10 @@
 import fire
+import random
 from torch.utils.data import DataLoader as TorchDataLoader
 
-from deepproblog.dataset import DataLoader, QueryDataset
+from problog.logic import Constant
+
+from deepproblog.dataset import DataLoader, QueryDataset, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Forth.WAP.data.for_calibration import RawWAPOp1ValidationDataset, RawWAPOp2ValidationDataset, RawWAPPermuteValidationDataset, RawWAPSwapValidationDataset, op1_dataloader_collate_fn, op2_dataloader_collate_fn, permute_dataloader_collate_fn, swap_dataloader_collate_fn
@@ -15,10 +18,15 @@ def main(
   calibrate = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   train_queries = QueryDataset("data/train_s.pl")
   dev_queries = QueryDataset("data/dev_s.pl")
   test_queries = QueryDataset("data/test_s.pl")
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output([Constant(float(random.randint(1, 86)))])
+    train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
   raw_datasets = {
     "nn_permute": RawWAPPermuteValidationDataset(),
     "nn_op1": RawWAPOp1ValidationDataset(),

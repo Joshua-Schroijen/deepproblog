@@ -3,7 +3,7 @@ import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
 from problog.logic import Constant
-from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDataset
+from deepproblog.dataset import DataLoader, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Poker import PokerSeparate, RawPokerNet1ValidationDataset
@@ -33,8 +33,8 @@ def main(
   dataset = "unfair"
 
   if train_with_label_noise:
-    label_noise = lambda q: q.replace_output([[Constant("win"), Constant("loss"), Constant("draw")][random.randint(0, 2)]])
-    datasets["unfair"] = MutatingDataset(datasets["unfair"], NoiseMutatorDecorator(label_noise_probability, label_noise))
+    label_noise = lambda _, q: q.replace_output([[Constant("win"), Constant("loss"), Constant("draw")][random.randint(0, 2)]])
+    datasets["unfair"] = MutatingDatasetWithItems(datasets["unfair"], NoiseMutatorDecorator(label_noise_probability, label_noise))
 
   batch_size = 50
   if calibrate == True:
