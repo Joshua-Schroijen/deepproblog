@@ -1,8 +1,11 @@
 import fire
+import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
 
-from deepproblog.dataset import DataLoader, QueryDataset
+from problog.logic import Constant
+
+from deepproblog.dataset import DataLoader, QueryDataset, NoiseMutatorDecorator, MutatingDatasetWithItems
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.examples.Forth import EncodeModule
@@ -17,12 +20,17 @@ def main(
   calibrate_after_each_train_iteration = False,
   save_model_state = True,
   model_state_name = None,
+  train_with_label_noise = False,
+  label_noise_probability = 0.2,
 ):
   train = 2
   test = 8
   train_queries = QueryDataset("data/train{}_test{}_train.txt".format(train, test))
   test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
   val = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
+  if train_with_label_noise:
+    label_noise = lambda _, q: q.replace_output([random.choice([Constant(0), Constant(1)]), random.choice([Constant(i) for i in range(0, 10)])])
+    train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
   # all_test = DataLoader(QueryDataset('data/tests.pl'), 16)
   raw_add_neural1_validation_dataset = RawAddNeural1ValidationDataset()
   raw_add_neural2_validation_dataset = RawAddNeural2ValidationDataset()

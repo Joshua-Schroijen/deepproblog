@@ -126,9 +126,7 @@ class TrainObject(object):
             self.model.optimizer.step_epoch()
             if verbose and epoch_size > log_iter:
                 print("Epoch", self.epoch + 1)
-            index_loader = load_list(loader.indices, loader.batch_size)
             for batch in loader:
-                batch_indices = next(index_loader)
                 if self.interrupt:
                     break
                 self.i += 1
