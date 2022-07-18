@@ -57,8 +57,7 @@ def main(
     log_iter = 50,
     test_iter = len(train_queries),
     test = lambda x: [
-      #  ("Accuracy", get_confusion_matrix(test_model, dev_queries, verbose = 0).accuracy())
-      ("Accuracy", get_confusion_matrix(model, dev_queries, verbose = 0).accuracy())
+      ("Accuracy", get_confusion_matrix(test_model, dev_queries, verbose = 0).accuracy())
     ],
   )
 
@@ -71,8 +70,7 @@ def main(
       model.save_state(f"snapshot/{model_state_name}.pth")
     else:
       model.save_state(f"snapshot/forth_sort.pth")
-      
-  #return [train_obj, get_confusion_matrix(test_model, dev_queries, verbose = 0)]
+
   return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
