@@ -35,6 +35,7 @@ def main(
     calibration_net1_valid_loader = TorchDataLoader(RawCoinsNet1ValidationDataset(validation_set), batch_size)
     calibration_net2_valid_loader = TorchDataLoader(RawCoinsNet2ValidationDataset(validation_set), batch_size)
   else:
+    train_dataset_ = train_dataset
     if train_with_label_noise:
       train_dataset_ = MutatingDatasetWithItems(train_dataset, NoiseMutatorDecorator(label_noise_probability, label_noise))
     train_loader = DataLoader(train_dataset_, batch_size)
