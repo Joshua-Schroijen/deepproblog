@@ -427,7 +427,6 @@ class NetworkECECollector(NetworksEvolutionCollector):
         self._no_iterations = 0
         self._no_epochs = 0
 
-    @abstractmethod
     def collection_as_dict(self):
         return {
           "before_calibration_ece_history": self.before_calibration_ece_history,
