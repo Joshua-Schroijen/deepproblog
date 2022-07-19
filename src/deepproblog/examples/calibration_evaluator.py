@@ -77,7 +77,7 @@ def evaluate_MNIST_addition(logger):
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, with label noise")
-  log_subheading(logger, "Without calibration after each train iteration"s)
+  log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = addition.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
   dump_data_of_interest("calibration_evaluation_addition_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
