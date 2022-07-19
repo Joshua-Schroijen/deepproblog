@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get -y update && sudo apt-get -y upgrade
-sudo apt-get install -y python3-pip python3.9-venv python3.10-venv gcc swi-prolog libpython3-dev unzip
+sudo apt-get install -y python3-pip python3.10-venv gcc swi-prolog libpython3-dev unzip
 python3 -m venv DevEnv
 source DevEnv/bin/activate
 pip3 install numpy matplotlib fire gdown
