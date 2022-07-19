@@ -362,24 +362,24 @@ def evaluate_CLUTRR(logger):
   log_heading(logger, "Evaluating CLUTRR")
 
   log_subheading(logger, "Without calibration, no label noise")
-  [train, confusion_matrix] = clutrr.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  [train, confusion_matrix] = clutrr.main(calibrate = False)
   dump_data_of_interest("calibration_evaluation_clutrr_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
-  [train, confusion_matrix] = clutrr.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  [train, confusion_matrix] = clutrr.main(calibrate = True)
   dump_data_of_interest("calibration_evaluation_clutrr_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "Without calibration, with label noise")
-  [train, confusion_matrix] = clutrr.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  [train, confusion_matrix] = clutrr.main(calibrate = False, train_with_label_noise = True)
   dump_data_of_interest("calibration_evaluation_clutrr_ff_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, with label noise")
   log_subheading(logger, "Without calibration after each train iteration")
-  [train, confusion_matrix] = clutrr.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  [train, confusion_matrix] = clutrr.main(calibrate = True, train_with_label_noise = True)
   dump_data_of_interest("calibration_evaluation_clutrr_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
