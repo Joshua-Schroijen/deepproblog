@@ -52,7 +52,7 @@ def main(
       Constant("uncle"),
       Constant("so")
     ]))
-    train_queries = MutatingDatasetWithItems(train_queries, NoiseMutatorDecorator(label_noise_probability, label_noise))
+    train_dataset = MutatingDatasetWithItems(train_dataset, NoiseMutatorDecorator(label_noise_probability, label_noise))
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
   raw_datasets = {
