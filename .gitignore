@@ -261,3 +261,6 @@ src/deepproblog/examples/Smokers/data/
 src/deepproblog/examples/Successor/data/MNIST/
 /venv/
 /DevEnv/
+
+# VS Code
+deepproblog.code-workspace
