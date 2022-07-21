@@ -26,8 +26,8 @@ class FixedSizeList:
     else:
       raise StopIteration
 
-def main(n = 10):
-  result = subprocess.run(['python3', '-u', '-m', 'trace', '--trace'], capture_output = True, text = True)
+def main(i, n = 10):
+  result = subprocess.run(['python3', '-u', '-m', 'trace', '--trace', i], capture_output = True, text = True)
   output = result.stdout.splitlines()
 
   input_fsl = FixedSizeList(n)
