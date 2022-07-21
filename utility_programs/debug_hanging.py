@@ -1,6 +1,5 @@
 import fire
 import subprocess
-import sys
 
 FIVE_MINUTES = 300
 
@@ -22,13 +21,21 @@ class FixedSizeList:
 
   def __next__(self):
     if self.iter_i < len(self.the_list):
-      return self.the_list[self.iter_i]
+      nxt = self.the_list[self.iter_i]
+      self.iter_i += 1
+      return nxt
     else:
       raise StopIteration
 
 def main(i, n = 10, t = FIVE_MINUTES):
-  result = subprocess.run(['python3', '-u', '-m', 'trace', '--trace', i], capture_output = True, text = True, timeout = t)
-  output = result.stdout.splitlines()
+  proc = subprocess.Popen(['python3', '-u', '-m', 'trace', '--trace', i], stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True)
+  try:
+    outs, _ = proc.communicate(timeout = t)
+  except subprocess.TimeoutExpired:
+    proc.kill()
+    outs, _ = proc.communicate()
+
+  output = outs.splitlines()
 
   input_fsl = FixedSizeList(n)
   for line in output:
