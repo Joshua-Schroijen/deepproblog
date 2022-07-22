@@ -78,7 +78,7 @@ def main(
     else:
       model.save_state(f"snapshot/forth_add.pth")
 
-  cm = get_confusion_matrix(model, test_queries, verbose = 0)
+  cm = get_confusion_matrix(test_model, test_queries, verbose = 0)
 
   return [train_obj, cm]
 
