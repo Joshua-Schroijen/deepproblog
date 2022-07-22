@@ -147,6 +147,7 @@ class ExactEngine(Engine):
         return ground
 
     def create_nn_predicate_ad(self, e):
+        breakpoint()
         p = e.probability
         net, inputs, output, domain = p.args
         network = self.model.networks[str(net)]
