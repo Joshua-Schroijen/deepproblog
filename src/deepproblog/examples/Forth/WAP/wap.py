@@ -91,7 +91,7 @@ def main(
     else:
       model.save_state(f"snapshot/forth_WAP.pth")
 
-  return [train_obj, get_confusion_matrix(model, test_queries, verbose = 0)]
+  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
 
 if __name__ == "__main__":
   fire.Fire(main)
