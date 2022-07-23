@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 from torch.utils.data import Dataset as TorchDataset
 
-from deepproblog.dataset import ImageDataset, Subset
+from deepproblog.dataset import ImageDataset, Subset, MutatingDatasetWithItems
 from deepproblog.query import Query
 from problog.logic import Term, Constant, list2term
 
@@ -174,7 +174,13 @@ class RawPokerNet1ValidationDataset(TorchDataset):
         labels = []
         line_no = 0
         poker_dataset_is_subset = isinstance(self.poker_dataset, Subset)
-        with open("data/labels/{}.csv".format(self.poker_dataset.dataset.dataset if poker_dataset_is_subset else self.poker_dataset.dataset)) as f:
+        if   poker_dataset_is_subset:
+            dataset = self.poker_dataset.dataset.dataset
+        elif isinstance(self.poker_dataset, MutatingDatasetWithItems):
+            dataset = self.poker_dataset.inner_dataset
+        else:
+            dataset = self.poker_dataset.dataset
+        with open("data/labels/{}.csv".format(dataset)) as f:
             for line in f:
                 if poker_dataset_is_subset and not \
                    (line_no < self.poker_dataset.j and \
