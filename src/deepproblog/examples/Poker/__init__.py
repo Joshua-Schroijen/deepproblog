@@ -174,10 +174,14 @@ class RawPokerNet1ValidationDataset(TorchDataset):
         labels = []
         line_no = 0
         poker_dataset_is_subset = isinstance(self.poker_dataset, Subset)
+        poker_dataset_is_subset = isinstance(self.poker_dataset, Subset)
         if   poker_dataset_is_subset:
-            dataset = self.poker_dataset.dataset.dataset
+            if isinstance(self.poker_dataset.dataset, MutatingDatasetWithItems):
+                dataset = self.poker_dataset.dataset.inner_dataset.dataset
+            else:
+                dataset = self.poker_dataset.dataset.dataset
         elif isinstance(self.poker_dataset, MutatingDatasetWithItems):
-            dataset = self.poker_dataset.inner_dataset
+            dataset = self.poker_dataset.inner_dataset.dataset
         else:
             dataset = self.poker_dataset.dataset
         with open("data/labels/{}.csv".format(dataset)) as f:
