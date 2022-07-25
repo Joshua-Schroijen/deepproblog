@@ -285,7 +285,7 @@ def evaluate_Forth_Add(logger):
   dump_data_of_interest("calibration_evaluation_forth_add_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  os.chdir("..")
+  os.chdir(os.path.join("..", ".."))
 
 def evaluate_Forth_Sort(logger):
   os.chdir(os.path.join("Forth", "Sort"))
@@ -327,7 +327,7 @@ def evaluate_Forth_Sort(logger):
   dump_data_of_interest("calibration_evaluation_forth_sort_tt_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  os.chdir("..")
+  os.chdir(os.path.join("..", ".."))
 
 def evaluate_Forth_WAP(logger):
   os.chdir(os.path.join("Forth", "WAP"))
@@ -357,7 +357,7 @@ def evaluate_Forth_WAP(logger):
   dump_data_of_interest("calibration_evaluation_forth_wap_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
-  os.chdir("..")
+  os.chdir(os.path.join("..", ".."))
 
 def evaluate_CLUTRR(logger):
   os.chdir("CLUTRR")
