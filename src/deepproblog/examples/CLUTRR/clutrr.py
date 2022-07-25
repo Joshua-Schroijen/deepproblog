@@ -39,7 +39,7 @@ def main(
   dataset = clutrr.get_dataset(".*train", gender = True, type = "split")
   train_dataset, val_dataset = split_dataset(dataset)
   if train_with_label_noise:
-    label_noise = lambda _, q: q.replace_output(random.choice([
+    label_noise = lambda _, q: q.replace_output([random.choice([
       Constant("child"),
       Constant("child_in_law"),
       Constant("parent"),
@@ -51,7 +51,7 @@ def main(
       Constant("nephew"),
       Constant("uncle"),
       Constant("so")
-    ]))
+    ])])
     train_dataset = MutatingDatasetWithItems(train_dataset, NoiseMutatorDecorator(label_noise_probability, label_noise))
   test_datasets = clutrr.get_dataset(".*test", gender = True, type = "split", separate = True)
   print(dataset_names[configuration["dataset"]])
