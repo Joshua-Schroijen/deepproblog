@@ -336,24 +336,24 @@ def evaluate_Forth_WAP(logger):
   log_heading(logger, "Evaluating Forth/WAP")
 
   log_subheading(logger, "Without calibration, no label noise")
-  [train, confusion_matrix] = forth_wap.main(calibrate = False, calibrate_after_each_train_iteration = False)
+  [train, confusion_matrix] = forth_wap.main(calibrate = False)
   dump_data_of_interest("calibration_evaluation_forth_wap_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, no label noise")
   log_subheading(logger, "Without calibration after each train iteration")
-  [train, confusion_matrix] = forth_wap.main(calibrate = True, calibrate_after_each_train_iteration = False)
+  [train, confusion_matrix] = forth_wap.main(calibrate = True)
   dump_data_of_interest("calibration_evaluation_forth_wap_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "Without calibration, with label noise")
-  [train, confusion_matrix] = forth_wap.main(calibrate = False, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  [train, confusion_matrix] = forth_wap.main(calibrate = False, train_with_label_noise = True)
   dump_data_of_interest("calibration_evaluation_forth_wap_ff_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, with label noise")
   log_subheading(logger, "Without calibration after each train iteration")
-  [train, confusion_matrix] = forth_wap.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
+  [train, confusion_matrix] = forth_wap.main(calibrate = True, train_with_label_noise = True)
   dump_data_of_interest("calibration_evaluation_forth_wap_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
