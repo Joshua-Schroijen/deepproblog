@@ -27,6 +27,8 @@ from torch import nn, optim
 from torch.nn import functional as F, Softmax
 from torch.utils.data import DataLoader
 
+from .utils import print_with_timestamp
+
 from .network import Network, ClassificationNetworkModule
 from .networks_evolution_collector import NetworksEvolutionCollector
 
@@ -346,7 +348,7 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         before_temperature_nll = nll_criterion(logits, labels).item()
         before_temperature_ece = ece_criterion(logits, labels).item()
         self._before_temperature_ece = before_temperature_ece
-        print('Before temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, before_temperature_nll, before_temperature_ece))
+        print_with_timestamp('Before temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, before_temperature_nll, before_temperature_ece))
 
         # Next: optimize the temperature w.r.t. NLL
         optimizer = optim.LBFGS([self.temperature], lr=0.01, max_iter=50)
@@ -362,8 +364,8 @@ class _NetworkWithTemperature(ClassificationNetworkModule):
         after_temperature_nll = nll_criterion(self.temperature_scale(logits), labels).item()
         after_temperature_ece = ece_criterion(self.temperature_scale(logits), labels).item()
         self._after_temperature_ece = after_temperature_ece
-        print('Optimal temperature (%s): %.3f' % (self.model.name, self.temperature.item()))
-        print('After temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, after_temperature_nll, after_temperature_ece))
+        print_with_timestamp('Optimal temperature (%s): %.3f' % (self.model.name, self.temperature.item()))
+        print_with_timestamp('After temperature (%s) - NLL: %.3f, ECE: %.3f' % (self.model.name, after_temperature_nll, after_temperature_ece))
 
         return self
 
