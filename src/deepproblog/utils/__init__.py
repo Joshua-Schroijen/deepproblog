@@ -1,3 +1,4 @@
+from datetime import datetime
 import io
 import os
 import random
@@ -23,6 +24,12 @@ parser = problog.parser.PrologParser(problog.program.ExtendedPrologFactory())
 cred = "\033[91m"
 cend = "\033[0m"
 cgreen = "\033[92m"
+
+def print_with_timestamp(to_print: str):
+    now = datetime.now()
+
+    current_time = now.strftime("%d/%m/%Y %H:%M:%S")
+    print(f"{current_time}: {to_print}")
 
 def log_exists(location: Union[str, os.PathLike], name: str):
     return Path(location).glob(name + "*")
