@@ -99,10 +99,11 @@ def main(
   elif configuration["method"] == "gm":
     model.set_engine(ApproximateEngine(model, 1, heuristic, exploration = True))
 
-  train_log = TrainObject(model)
+  train_log = TrainObject(model, networks_evolution_collectors)
   train_log.train(
     loader,
     Threshold("Accuracy", 1.0) + StopOnPlateau("Accuracy", patience = 5, warm_up = 10),
+    networks_evolution_collectors,
     initial_test = False,
     test = lambda x: [
       (
