@@ -102,19 +102,19 @@ def evaluate_MNIST_noisy(logger):
 
   log_subheading(logger, "Without calibration")
   [train, confusion_matrix] = addition_noisy.main(calibrate = False, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_ff.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_noisy_addition_ff.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = addition_noisy.main(calibrate = True, calibrate_after_each_train_iteration = False)
-  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_tf.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_noisy_addition_tf.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration")
   log_subheading(logger, "With calibration after each train iteration")
   [train, confusion_matrix] = addition_noisy.main(calibrate = True, calibrate_after_each_train_iteration = True)
-  dump_data_of_interest("calibration_evaluation_addition_noisy_addition_tt.jsonn", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_noisy_addition_tt.json", train, confusion_matrix)
   log_empty_line(logger)
 
   os.chdir("..")
@@ -318,7 +318,7 @@ def evaluate_Forth_Sort(logger):
   log_subheading(logger, "With calibration, with label noise")
   log_subheading(logger, "Without calibration after each train iteration")
   [train, confusion_matrix] = forth_sort.main(calibrate = True, calibrate_after_each_train_iteration = False, train_with_label_noise = True)
-  dump_data_of_interest("calibration_evaluation_forth_sort_ln.json", train, confusion_matrix)
+  dump_data_of_interest("calibration_evaluation_forth_sort_tf_ln.json", train, confusion_matrix)
   log_empty_line(logger)
 
   log_subheading(logger, "With calibration, with label noise")
