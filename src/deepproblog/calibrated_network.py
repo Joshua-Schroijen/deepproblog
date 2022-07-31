@@ -419,7 +419,7 @@ class _ECELoss(nn.Module):
         return ece
 
 class NetworkECECollector(NetworksEvolutionCollector):
-    def __init__(self, epoch_collect_iter: int = 1, iteration_collect_iter: int = 100):
+    def __init__(self, epoch_collect_iter: int = 1, iteration_collect_iter: int = 1):
         self.epoch_collect_iter = epoch_collect_iter
         self.iteration_collect_iter = iteration_collect_iter
 
