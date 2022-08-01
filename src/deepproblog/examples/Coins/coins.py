@@ -72,9 +72,17 @@ def main(
     infoloss = 0.25
   )
 
+  ECEs_final_calibration = {
+    "net1": {},
+    "net2": {}
+  }
   if calibrate:
+    ECEs_final_calibration["net1"]["before"] = coin_net1.get_expected_calibration_error(calibration_net1_valid_loader)
+    ECEs_final_calibration["net2"]["before"] = coin_net2.get_expected_calibration_error(calibration_net2_valid_loader)
     coin_net1.calibrate()
     coin_net2.calibrate()
+    ECEs_final_calibration["net1"]["after"] = coin_net1.get_expected_calibration_error(calibration_net1_valid_loader)
+    ECEs_final_calibration["net2"]["after"] = coin_net2.get_expected_calibration_error(calibration_net2_valid_loader)
 
   if save_model_state:
     if model_state_name:
@@ -82,7 +90,7 @@ def main(
     else:
       model.save_state("snapshot/coins.pth")
 
-  return [train_obj, get_confusion_matrix(model, test_dataset, verbose = 0)]
+  return [train_obj, get_confusion_matrix(model, test_dataset, verbose = 0), ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
