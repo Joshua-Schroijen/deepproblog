@@ -55,7 +55,7 @@ def main(
   if calibrate == True:
     validation_loader = TorchDataLoader(noisy_dataset_validation, 2)
     net = TemperatureScalingNetwork(network, "mnist_net", validation_loader, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(iteration_collect_iter = 100)
   else:
     net = Network(network, "mnist_net", batching = True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
@@ -69,8 +69,13 @@ def main(
 
   train = train_model(model, queries, 1, networks_evolution_collectors, log_iter = 100)
 
+  ECEs_final_calibration = {
+    "mnist_net": {}
+  }
   if calibrate:
+    ECEs_final_calibration["mnist_net"]["before"] = net.get_expected_calibration_error(validation_loader)    
     net.calibrate()
+    ECEs_final_calibration["mnist_net"]["after"] = net.get_expected_calibration_error(validation_loader)
 
   if save_model_state:
     if model_state_name:
@@ -78,7 +83,7 @@ def main(
     else:
       model.save_state("snapshot/addition_noisy.pth")
 
-  return [train, get_confusion_matrix(model, noisy_test_set, verbose = 0)]
+  return [train, get_confusion_matrix(model, noisy_test_set, verbose = 0), ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
