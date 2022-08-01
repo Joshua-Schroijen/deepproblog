@@ -78,7 +78,12 @@ def main(
       gender_net_val_loader,
       optimizer = torch.optim.Adam(gender_net.parameters(), lr = 1e-2),
     )
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+      {
+        "rel_extract": rel_net_val_loader,
+        "gender_net": gender_net_val_loader
+      }
+    )
   else:   
     rel_net = Network(RelNet(embed_size, 2 * embed_size), "rel_extract")
     gender_net = GenderNet(clutrr.get_vocabulary(), embed_size)

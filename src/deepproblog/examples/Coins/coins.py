@@ -47,7 +47,12 @@ def main(
   if calibrate == True:
     coin_net1 = TemperatureScalingNetwork(coin_network1, "net1", calibration_net1_valid_loader, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     coin_net2 = TemperatureScalingNetwork(coin_network2, "net2", calibration_net2_valid_loader, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+      {
+        "net1": calibration_net1_valid_loader,
+        "net2": calibration_net2_valid_loader
+      }
+    )
   else:
     coin_net1 = Network(coin_network1, "net1", batching = True)
     coin_net2 = Network(coin_network2, "net2", batching = True)

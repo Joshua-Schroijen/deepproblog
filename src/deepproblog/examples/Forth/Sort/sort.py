@@ -40,7 +40,7 @@ def main(
     swap_net_validation_dataloader = TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn)
     fc1_network = TemperatureScalingNetwork(fc1, "swap_net", swap_net_validation_dataloader, optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     fc1_test_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector({"swap_net": swap_net_validation_dataloader})
   else:
     fc1_network = Network(fc1, "swap_net", optimizer = torch.optim.Adam(fc1.parameters(), 1.0))
     fc1_test_network = Network(fc1, "swap_net", k = 1)
