@@ -93,7 +93,9 @@ def main(
     )
     train.logger.write_to_file("log/" + name)
 
-  ECEs_final_calibration = {}
+  ECEs_final_calibration = {
+    "mnist_net": {}
+  }
   if calibrate == True:
     ECEs_final_calibration["mnist_net"]["before"] = net.get_expected_calibration_error(validation_loader_for_calibration)
     net.calibrate()
