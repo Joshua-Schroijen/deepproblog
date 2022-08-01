@@ -89,9 +89,9 @@ def main(
   }
   if calibrate:
     for train_network in train_networks[1:]:
-      ECEs_final_calibration[train_network.name]["before"] = train_network.get_expected_calibration_error(raw_add_neural1_validation_loader)
+      ECEs_final_calibration[train_network.name]["before"] = train_network.get_expected_calibration_error(raw_validation_dataloaders[train_network.name])
       train_network.calibrate()
-      ECEs_final_calibration[train_network.name]["after"] = train_network.get_expected_calibration_error(raw_add_neural1_validation_loader)
+      ECEs_final_calibration[train_network.name]["after"] = train_network.get_expected_calibration_error(raw_validation_dataloaders[train_network.name])
 
   if save_model_state:
     if model_state_name:
