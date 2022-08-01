@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from abc import ABC, abstractmethod
-from typing import Collection, Optional
+from typing import Collection, Dict, Optional
 import torch
 from torch import nn, optim
 from torch.nn import functional as F, Softmax
@@ -420,9 +420,12 @@ class _ECELoss(nn.Module):
         return ece
 
 class NetworkECECollector(NetworksEvolutionCollector):
-    def __init__(self, epoch_collect_iter: int = 1, iteration_collect_iter: int = 1):
+    def __init__(self, validation_loaders: Dict[str, DataLoader], epoch_collect_iter: int = 1, iteration_collect_iter: int = 1):
         self.epoch_collect_iter = epoch_collect_iter
         self.iteration_collect_iter = iteration_collect_iter
+
+        self.ece_history = {}
+        self.validation_loaders = validation_loaders
 
         self.before_calibration_ece_history = {}
         self.after_calibration_ece_history = {}
@@ -432,6 +435,7 @@ class NetworkECECollector(NetworksEvolutionCollector):
 
     def collection_as_dict(self):
         return {
+          "ece_history": self.ece_history, 
           "before_calibration_ece_history": self.before_calibration_ece_history,
           "after_calibration_ece_history": self.after_calibration_ece_history
         }
@@ -449,6 +453,10 @@ class NetworkECECollector(NetworksEvolutionCollector):
         self._no_iterations += 1
         if self._no_iterations % self.iteration_collect_iter == 0:
             for name in networks:
+                if isinstance(networks[name], CalibratedNetwork):
+                   self.ece_history[name] = self.ece_history.get(name, [])
+                   self.ece_history[name].append(networks[name].get_expected_calibration_error(self.validation_loaders[name]))                  
+
                 if isinstance(networks[name], CalibratedNetwork) and \
                    networks[name].calibrate_after_each_train_iteration:
                     self.before_calibration_ece_history[name] = self.before_calibration_ece_history.get(name, [])
