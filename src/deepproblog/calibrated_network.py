@@ -448,7 +448,8 @@ class NetworkECECollector(NetworksEvolutionCollector):
         self._no_iterations += 1
         if self._no_iterations % self.iteration_collect_iter == 0:
             for name in networks:
-                if isinstance(networks[name], CalibratedNetwork):
+                if isinstance(networks[name], CalibratedNetwork) and \
+                   networks[name].calibrate_after_each_train_iteration:
                     self.before_calibration_ece_history[name] = self.before_calibration_ece_history.get(name, [])
                     self.before_calibration_ece_history[name].append(networks[name].before_calibration_ece)
                     self.after_calibration_ece_history[name] = self.after_calibration_ece_history.get(name, [])
