@@ -44,16 +44,19 @@ def main(
     "nn_swap": swap_dataloader_collate_fn,
     "nn_op2": op2_dataloader_collate_fn,
   }
+  raw_validation_dataloaders = {
+    k: TorchDataLoader(raw_datasets[k], 10, collate_fn = collate_fns[k]) for k in raw_datasets.keys()
+  }
 
   networks = get_networks(0.005, 0.5)
   networks_evolution_collectors = {}
   if calibrate == True:
     train_networks = \
       [Network(networks[0][0], networks[0][1], networks[0][2])] + \
-      [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(raw_datasets[x[1]], 10, collate_fn = collate_fns[x[1]]), x[2]) for x in networks[1:]]
+      [TemperatureScalingNetwork(x[0], x[1], raw_validation_dataloaders[x[1]], x[2]) for x in networks[1:]]
     test_networks = \
       [Network(networks[0][0], networks[0][1])] + \
-      [TemperatureScalingNetwork(x[0], x[1], TorchDataLoader(raw_datasets[x[1]], 10, collate_fn = collate_fns[x[1]]), k = 1) for x in networks[1:]]
+      [TemperatureScalingNetwork(x[0], x[1], raw_validation_dataloaders[x[1]], k = 1) for x in networks[1:]]
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
     train_networks = [Network(x[0], x[1], x[2]) for x in networks]
@@ -81,9 +84,14 @@ def main(
   rnn = networks[0][0]
   for raw_dataset in raw_datasets.values():
     raw_dataset.update_embeddings(rnn)
+  ECEs_final_calibration = {
+    n.name: {} for n in train_networks[1:]
+  }
   if calibrate:
     for train_network in train_networks[1:]:
+      ECEs_final_calibration[train_network.name]["before"] = train_network.get_expected_calibration_error(raw_add_neural1_validation_loader)
       train_network.calibrate()
+      ECEs_final_calibration[train_network.name]["after"] = train_network.get_expected_calibration_error(raw_add_neural1_validation_loader)
 
   if save_model_state:
     if model_state_name:
@@ -91,7 +99,7 @@ def main(
     else:
       model.save_state(f"snapshot/forth_WAP.pth")
 
-  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
+  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0), ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
