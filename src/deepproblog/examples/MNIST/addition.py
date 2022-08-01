@@ -64,7 +64,10 @@ def main(
   networks_evolution_collectors = {}
   if calibrate == True:
       net = TemperatureScalingNetwork(network, "mnist_net", validation_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-      networks_evolution_collectors["calibration_collector"] = NetworkECECollector(iteration_collect_iter = 100)
+      networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+        {"mnist_net": validation_loader_for_calibration},
+        iteration_collect_iter = 100
+      )
   else:
       net = Network(network, "mnist_net", batching = True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
