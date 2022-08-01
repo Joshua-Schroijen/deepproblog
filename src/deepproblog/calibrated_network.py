@@ -182,7 +182,7 @@ class CalibratedNetwork(Network, ABC):
             logits_list = []
             labels_list = []
             for input, label in valid_loader:
-                logits = self.network_module.get_output_logits(input)
+                logits = self.network_module.forward(input) if self.calibrated else self.network_module.get_output_logits(input)
                 logits_list.append(logits)
                 labels_list.append(label)
 
@@ -197,7 +197,7 @@ class CalibratedNetwork(Network, ABC):
             bin_lowers = bin_boundaries[:-1]
             bin_uppers = bin_boundaries[1:]
 
-            softmaxes = F.softmax(logits, dim = 1)
+            softmaxes = logits if self.calibrated else F.softmax(logits, dim = 1)
             confidences, predictions = torch.max(softmaxes, 1)
             labels_ = torch.argmax(labels, 1)
             accuracies = predictions.eq(labels_)
