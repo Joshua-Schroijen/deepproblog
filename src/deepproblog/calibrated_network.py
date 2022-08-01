@@ -199,7 +199,7 @@ class CalibratedNetwork(Network, ABC):
 
             softmaxes = F.softmax(logits, dim = 1)
             confidences, predictions = torch.max(softmaxes, 1)
-            labels_ = torch.argmax(softmaxes, 1)
+            labels_ = torch.argmax(labels, 1)
             accuracies = predictions.eq(labels_)
 
             ece = torch.zeros(1, device = logits.device)
@@ -404,7 +404,7 @@ class _ECELoss(nn.Module):
     def forward(self, logits, labels):
         softmaxes = F.softmax(logits, dim = 1)
         confidences, predictions = torch.max(softmaxes, 1)
-        labels_ = torch.argmax(softmaxes, 1)
+        labels_ = torch.argmax(labels, 1)
         accuracies = predictions.eq(labels_)
 
         ece = torch.zeros(1, device = logits.device)
