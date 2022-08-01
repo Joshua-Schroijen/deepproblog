@@ -53,7 +53,7 @@ def main(
       batching = True,
       calibrate_after_each_train_iteration = calibrate_after_each_train_iteration
     )
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector({"net1": calibration_valid_loader})
   else:
     net = Network(
       smallnet(pretrained = True, num_classes = 4, size = (100, 150)),

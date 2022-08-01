@@ -78,7 +78,10 @@ def main(
     net2_valid_loader = TorchDataLoader(raw_hwf_operators_validation_dataset, 32, shuffle = True)
     net1 = TemperatureScalingNetwork(network1, "net1", net1_valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     net2 = TemperatureScalingNetwork(network2, "net2", net2_valid_loader, Adam(network2.parameters(), lr = 3e-3), batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(iteration_collect_iter = 25)
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+      {"net1": net1_valid_loader, "net2": net2_valid_loader},
+      iteration_collect_iter = 25
+    )
   else:
     net1 = Network(network1, "net1", Adam(network1.parameters(), lr = 3e-3), batching = True)
     net2 = Network(network2, "net2", Adam(network2.parameters(), lr = 3e-3), batching = True)
