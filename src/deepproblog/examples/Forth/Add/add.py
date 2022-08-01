@@ -39,8 +39,10 @@ def main(
   net2 = EncodeModule(22, 10, 2, "tanh")
   networks_evolution_collectors = {}
   if calibrate == True:
-    network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10)), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(2)), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    raw_add_neural1_validation_loader = TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10))
+    network1 = TemperatureScalingNetwork(net1, "neural1", raw_add_neural1_validation_loader, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    raw_add_neural2_validation_loader = TorchDataLoader(raw_add_neural2_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(2))
+    network2 = TemperatureScalingNetwork(net2, "neural2", raw_add_neural2_validation_loader, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     test_network1 = TemperatureScalingNetwork(net1, "neural1", TorchDataLoader(raw_add_neural1_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(10)), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     test_network2 = TemperatureScalingNetwork(net2, "neural2", TorchDataLoader(raw_add_neural2_validation_dataset, 50, collate_fn = neural_dataloader_collate_fn(2)), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
@@ -66,11 +68,19 @@ def main(
     test_iter = 100,
   )
 
+  ECEs_final_calibration = {
+    "neural1": {},
+    "neural2": {}
+  }
   if calibrate:
+    ECEs_final_calibration["neural1"]["before"] = network1.get_expected_calibration_error(raw_add_neural1_validation_loader)
+    ECEs_final_calibration["neural2"]["before"] = network2.get_expected_calibration_error(raw_add_neural2_validation_loader)
     network1.calibrate()
     network2.calibrate()
     test_network1.calibrate()
     test_network2.calibrate()
+    ECEs_final_calibration["neural1"]["after"] = network1.get_expected_calibration_error(raw_add_neural1_validation_loader)
+    ECEs_final_calibration["neural2"]["after"] = network2.get_expected_calibration_error(raw_add_neural2_validation_loader)
 
   if save_model_state:
     if model_state_name:
@@ -80,7 +90,7 @@ def main(
 
   cm = get_confusion_matrix(test_model, test_queries, verbose = 0)
 
-  return [train_obj, cm]
+  return [train_obj, cm, ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)

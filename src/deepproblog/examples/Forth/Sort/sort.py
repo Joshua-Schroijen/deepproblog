@@ -37,7 +37,8 @@ def main(
   fc1 = EncodeModule(20, 20, 2)
   networks_evolution_collectors = {}
   if calibrate == True:
-    fc1_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
+    swap_net_validation_dataloader = TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn)
+    fc1_network = TemperatureScalingNetwork(fc1, "swap_net", swap_net_validation_dataloader, optimizer = torch.optim.Adam(fc1.parameters(), 1.0), calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     fc1_test_network = TemperatureScalingNetwork(fc1, "swap_net", TorchDataLoader(raw_validation_dataset, 16, collate_fn = sort_dataloader_collate_fn), k = 1, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
   else:
@@ -61,9 +62,14 @@ def main(
     ],
   )
 
+  ECEs_final_calibration = {
+    "swap_net": {}
+  }
   if calibrate:
+    ECEs_final_calibration["swap_net"]["before"] = fc1_network.get_expected_calibration_error(swap_net_validation_dataloader)
     fc1_network.calibrate()
     fc1_test_network.calibrate()
+    ECEs_final_calibration["swap_net"]["after"] = fc1_network.get_expected_calibration_error(swap_net_validation_dataloader)
 
   if save_model_state:
     if model_state_name:
@@ -71,7 +77,7 @@ def main(
     else:
       model.save_state(f"snapshot/forth_sort.pth")
 
-  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0)]
+  return [train_obj, get_confusion_matrix(test_model, test_queries, verbose = 0), ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
