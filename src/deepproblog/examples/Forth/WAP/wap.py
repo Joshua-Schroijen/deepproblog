@@ -57,7 +57,11 @@ def main(
     test_networks = \
       [Network(networks[0][0], networks[0][1])] + \
       [TemperatureScalingNetwork(x[0], x[1], raw_validation_dataloaders[x[1]], k = 1) for x in networks[1:]]
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+      {
+        n.name: raw_validation_dataloaders[n.name] for n in networks[1:]
+      }
+    )
   else:
     train_networks = [Network(x[0], x[1], x[2]) for x in networks]
     test_networks = [Network(networks[0][0], networks[0][1])] + [
