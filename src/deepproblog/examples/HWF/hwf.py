@@ -78,7 +78,7 @@ def main(
     net2_valid_loader = TorchDataLoader(raw_hwf_operators_validation_dataset, 32, shuffle = True)
     net1 = TemperatureScalingNetwork(network1, "net1", net1_valid_loader, Adam(network1.parameters(), lr = 3e-3), batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
     net2 = TemperatureScalingNetwork(network2, "net2", net2_valid_loader, Adam(network2.parameters(), lr = 3e-3), batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-    networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+    networks_evolution_collectors["calibration_collector"] = NetworkECECollector(iteration_collect_iter = 25)
   else:
     net1 = Network(network1, "net1", Adam(network1.parameters(), lr = 3e-3), batching = True)
     net2 = Network(network2, "net2", Adam(network2.parameters(), lr = 3e-3), batching = True)
@@ -110,9 +110,17 @@ def main(
     ],
   )
 
+  ECEs_final_calibration = {
+    "net1": {},
+    "net2": {}
+  }
   if calibrate == True:
+    ECEs_final_calibration["net1"]["before"] = net1.get_expected_calibration_error(net1_valid_loader) 
+    ECEs_final_calibration["net2"]["before"] = net2.get_expected_calibration_error(net2_valid_loader) 
     net1.calibrate()
     net2.calibrate()
+    ECEs_final_calibration["net1"]["after"] = net1.get_expected_calibration_error(net1_valid_loader) 
+    ECEs_final_calibration["net2"]["after"] = net2.get_expected_calibration_error(net2_valid_loader) 
 
   cm = get_confusion_matrix(model, test_dataset, eps = 1e-6, verbose = 0)
   final_acc = cm.accuracy()
@@ -127,7 +135,7 @@ def main(
     else:
       model.save_state("snapshot/" + name + ".pth")
 
-  return [train_log, cm]
+  return [train_log, cm, ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
