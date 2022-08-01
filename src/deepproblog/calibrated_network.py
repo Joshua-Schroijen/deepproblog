@@ -199,6 +199,7 @@ class CalibratedNetwork(Network, ABC):
 
             softmaxes = F.softmax(logits, dim = 1)
             confidences, predictions = torch.max(softmaxes, 1)
+            labels_ = torch.argmax(softmaxes, 1)
             accuracies = predictions.eq(labels)
 
             ece = torch.zeros(1, device = logits.device)
