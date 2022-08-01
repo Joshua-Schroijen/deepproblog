@@ -116,9 +116,17 @@ def main(
   )
 
   raw_datasets["rel_extract"].update_embeddings(lstm)
+  ECEs_final_calibration = {
+    "rel_extract": {},
+    "gender_net": {}
+  }
   if calibrate:
+    ECEs_final_calibration["rel_extract"]["before"] = rel_net.get_expected_calibration_error(rel_net_val_loader)
+    ECEs_final_calibration["gender_net"]["before"] = gender_net.get_expected_calibration_error(gender_net_val_loader)
     rel_net.calibrate()
     gender_net.calibrate()
+    ECEs_final_calibration["rel_extract"]["after"] = rel_net.get_expected_calibration_error(rel_net_val_loader)
+    ECEs_final_calibration["gender_net"]["after"] = gender_net.get_expected_calibration_error(gender_net_val_loader)
 
   cms = []
   for dataset in test_datasets:
@@ -138,7 +146,7 @@ def main(
     else:
       model.save_state(f"models/{name}.pth")
 
-  return [train_log, cms]
+  return [train_log, cms, ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
