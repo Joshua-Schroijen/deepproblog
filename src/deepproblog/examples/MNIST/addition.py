@@ -17,7 +17,7 @@ from deepproblog.examples.MNIST.data import (
 from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.calibrated_network import CalibratedNetwork, TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
 from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
@@ -64,7 +64,7 @@ def main(
   networks_evolution_collectors = {}
   if calibrate == True:
       net = TemperatureScalingNetwork(network, "mnist_net", validation_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = calibrate_after_each_train_iteration)
-      networks_evolution_collectors["calibration_collector"] = NetworkECECollector()
+      networks_evolution_collectors["calibration_collector"] = NetworkECECollector(iteration_collect_iter = 100)
   else:
       net = Network(network, "mnist_net", batching = True)
   net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
@@ -93,8 +93,11 @@ def main(
     )
     train.logger.write_to_file("log/" + name)
 
+  ECEs_final_calibration = {}
   if calibrate == True:
+    ECEs_final_calibration["mnist_net"]["before"] = net.get_expected_calibration_error(validation_loader_for_calibration)
     net.calibrate()
+    ECEs_final_calibration["mnist_net"]["after"] = net.get_expected_calibration_error(validation_loader_for_calibration)
 
   if save_model_state:
     if model_state_name:
@@ -102,7 +105,7 @@ def main(
     else:
       model.save_state("snapshot/" + name + ".pth")
 
-  return [train, get_confusion_matrix(model, test_set, verbose = 0)]
+  return [train, get_confusion_matrix(model, test_set, verbose = 0), ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
