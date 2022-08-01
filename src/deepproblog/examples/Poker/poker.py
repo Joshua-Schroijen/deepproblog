@@ -82,8 +82,13 @@ def main(
     infoloss = 0.5,
   )
 
+  ECEs_final_calibration = {
+    "net1": {}
+  }
   if calibrate == True:
+    ECEs_final_calibration["net1"]["before"] = net.get_expected_calibration_error(calibration_valid_loader)
     net.calibrate()
+    ECEs_final_calibration["net1"]["after"] = net.get_expected_calibration_error(calibration_valid_loader)
 
   if save_model_state:
     if model_state_name:
@@ -92,7 +97,7 @@ def main(
       model.save_state("snapshot/poker.pth")
 
   cm = get_confusion_matrix(model, datasets["fair_test"], verbose = 0)
-  return [train_obj, cm]
+  return [train_obj, cm, ECEs_final_calibration]
 
 if __name__ == "__main__":
   fire.Fire(main)
