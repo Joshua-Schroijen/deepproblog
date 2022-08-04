@@ -1,11 +1,12 @@
 import torch
+from torch.utils.data import DataLoader as TorchDataLoader
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
 from deepproblog.model import Model
-from deepproblog.network import Network
 from deepproblog.train import train_model
-from deepproblog.examples.MNIST.data import MNISTOperator, MNIST_train, MNIST_test
+from deepproblog.examples.MNIST.data import MNISTOperator, MNIST_train, MNIST_test, RawMNISTValidationDataset
 from deepproblog.examples.MNIST.network import MNIST_Net
 
 if __name__ == "__main__":
@@ -31,14 +32,22 @@ if __name__ == "__main__":
   batch_size = 2
   train_dataloader = DataLoader(train_dataset, batch_size, False)
 
+  # Calibration
+  validation_loader_for_calibration = TorchDataLoader(RawMNISTValidationDataset(), batch_size)
+
   # General DeepProbLog flow - step 3
   # Create PyTorch NN objects
   MNIST_net_pytorch = MNIST_Net()
 
   # General DeepProbLog flow - step 4
   # Create DeepProbLog network objects (type deepproblog.network.Network) based on the PyTorch NNs
-  MNIST_net = Network(MNIST_net_pytorch, "mnist_net", batching = True)
+  networks_evolution_collectors = {}
+  MNIST_net = TemperatureScalingNetwork(MNIST_net_pytorch, "mnist_net", validation_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = False)
   MNIST_net.optimizer = torch.optim.Adam(MNIST_net_pytorch.parameters(), lr = 1e-3)
+  networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
+    {"mnist_net": validation_loader_for_calibration},
+    iteration_collect_iter = 100
+  )
 
   # General DeepProbLog flow - step 5
   # Construct a DeepProbLog model object (type deepproblog.model.Model) based on the KB file and the DeepProbLog Network objects
@@ -59,6 +68,7 @@ if __name__ == "__main__":
     model,
     train_dataloader,
     1,
+    networks_evolution_collectors,
     log_iter = 100,
     profile = 0
   )
