@@ -1,7 +1,6 @@
 import fire
 from json import dumps
 import random
-from sys import argv
 
 from torch.optim import Adam
 from torch.utils.data import DataLoader as TorchDataLoader
