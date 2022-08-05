@@ -11,7 +11,6 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.optimizer import SGD
-from deepproblog.query import Query
 from deepproblog.train import train_model
 from deepproblog.utils import split_dataset
 from deepproblog.utils.standard_networks import smallnet
