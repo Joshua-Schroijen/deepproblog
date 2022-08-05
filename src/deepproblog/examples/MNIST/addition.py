@@ -17,7 +17,7 @@ from deepproblog.examples.MNIST.data import (
 from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.calibrated_network import CalibratedNetwork, TemperatureScalingNetwork, NetworkECECollector
+from deepproblog.calibrated_network import TemperatureScalingNetwork, NetworkECECollector
 from deepproblog.train import train_model
 from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
