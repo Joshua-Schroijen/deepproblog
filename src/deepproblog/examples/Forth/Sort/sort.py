@@ -1,5 +1,4 @@
 import fire
-import random
 import torch
 from torch.utils.data import DataLoader as TorchDataLoader
 
@@ -13,7 +12,6 @@ from deepproblog.examples.Forth.Sort.data.for_calibration import RawSortValidati
 from deepproblog.examples.Forth import EncodeModule
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.query import Query
 from deepproblog.train import train_model
 
 def main(

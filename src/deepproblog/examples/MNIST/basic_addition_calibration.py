@@ -32,7 +32,11 @@ if __name__ == "__main__":
   batch_size = 2
   train_dataloader = DataLoader(train_dataset, batch_size, False)
 
-  # Calibration
+  # For calibrating the model, create a regular PyTorch data loader
+  # based on a raw NN dataset. Note that we use data that is no longer
+  # used in training or test queries, because this is a requirement of
+  # temperature scaling.
+  validation_loader_for_calibration = TorchDataLoader(RawMNISTValidationDataset(), batch_size)
   validation_loader_for_calibration = TorchDataLoader(RawMNISTValidationDataset(), batch_size)
 
   # General DeepProbLog flow - step 3
@@ -41,6 +45,12 @@ if __name__ == "__main__":
 
   # General DeepProbLog flow - step 4
   # Create DeepProbLog network objects (type deepproblog.network.Network) based on the PyTorch NNs
+  # For calibrating the model, use subclass of subclass
+  # deepproblog.calibrated_network.CalibratedNetwork, such as
+  # deepproblog.calibrated_network.TemperatureScalingNetwork to apply temperature scaling,
+  # and define a deepproblog.calibrated_network.NetworkECECollector to monitor model NN ECE evolution
+  # as a deepproblog.networks_evolution_collector.NetworksEvolutionCollector
+  # during training.
   networks_evolution_collectors = {}
   MNIST_net = TemperatureScalingNetwork(MNIST_net_pytorch, "mnist_net", validation_loader_for_calibration, batching = True, calibrate_after_each_train_iteration = False)
   MNIST_net.optimizer = torch.optim.Adam(MNIST_net_pytorch.parameters(), lr = 1e-3)
@@ -64,6 +74,8 @@ if __name__ == "__main__":
 
   # General DeepProbLog flow - step 8
   # Use the deepproblog.train.train_model function to train the DeepProbLog model (which means optimizing the unknown model probabilities/parameters and the model's NNs' weights for model accuracy on a test set of queries)
+  # For calibrating the model, we pass along the networks evolution collectors
+  # to monitor model NN ECE evolution during training
   train = train_model(
     model,
     train_dataloader,
@@ -76,4 +88,12 @@ if __name__ == "__main__":
   model.save_state(f"snapshot/basic_MNIST_model.pth")
 
   accuracy = get_confusion_matrix(model, test_dataset, verbose = 0).accuracy()
-  print(f"Done. The model acccuracy was {accuracy}.")
+  print(f"Done.\nThe model acccuracy was {accuracy}.")
+
+  for networks_evolution_collector in train.networks_evolution_collectors.values():
+    ece_histories = networks_evolution_collector.collection_as_dict()["ece_history"]
+    for network_name in ece_histories:
+      initial_ECE = ece_histories[network_name][0]
+      final_ECE = ece_histories[network_name][-1]
+      print(f"Model NN {network_name} initial ECE was {initial_ECE}")
+      print(f"Model NN {network_name} final ECE was {final_ECE}")
