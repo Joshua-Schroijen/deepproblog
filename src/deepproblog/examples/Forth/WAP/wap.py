@@ -59,7 +59,7 @@ def main(
       [TemperatureScalingNetwork(x[0], x[1], raw_validation_dataloaders[x[1]], k = 1) for x in networks[1:]]
     networks_evolution_collectors["calibration_collector"] = NetworkECECollector(
       {
-        n.name: raw_validation_dataloaders[n.name] for n in networks[1:]
+        n[1]: raw_validation_dataloaders[n[1]] for n in networks[1:]
       }
     )
   else:
