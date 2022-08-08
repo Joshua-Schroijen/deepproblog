@@ -154,7 +154,6 @@ class CalibratedNetwork(Network, ABC):
     def step(self):
         if self.calibrate_after_each_train_iteration == True:
             self.calibrate()
-            self.disable_calibration()
 
         super().step()
 
