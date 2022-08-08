@@ -440,7 +440,10 @@ class NetworkECECollector(NetworksEvolutionCollector):
         }
 
     def collect_before_training(self, networks: Collection[Network]):
-        pass
+        for name in networks:
+            if isinstance(networks[name], CalibratedNetwork):
+                self.ece_history[name] = self.ece_history.get(name, [])
+                self.ece_history[name].append(networks[name].get_expected_calibration_error(self.validation_loaders[name]))   
 
     def collect_before_epoch(self, networks: Collection[Network]):
         pass
