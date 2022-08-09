@@ -138,8 +138,7 @@ class TrainObject(object):
                     loss = self.get_loss_with_negatives(batch, loss_function)
                 else:
                     loss = self.get_loss(batch, loss_function)
-                if self.i % log_iter == 0:
-                    self.loss_history.append(loss)
+                self.loss_history.append(loss)
 
                 self.accumulated_loss += loss
 
